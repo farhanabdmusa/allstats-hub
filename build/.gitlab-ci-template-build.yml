@@ -1,5 +1,5 @@
-.get-version-php:
-  image: php:8.2-cli
+.get-version-laravel:
+  image: busybox:latest
   rules:
     - if: '$CI_COMMIT_BRANCH =~ /.*hotfix.*/'  # Matches branches starting with 'hotfix/'
       when: always
@@ -11,7 +11,7 @@
       when: always
     - when: never
   script: 
-    - VERSION=$(grep '"version"' composer.json | cut -d':' -f2 | tr -d ' ",')
+    - VERSION=$(grep \'version\' config/app.php | cut -d'>' -f2 | tr -d " ',")
     - if [[ "$CI_COMMIT_BRANCH" != "main" && "$CI_COMMIT_BRANCH" != hotfix* ]]; then VERSION="${CI_COMMIT_BRANCH}-${VERSION}"; fi
     - echo "Version $VERSION"
     - echo "VERSION=$VERSION" >> build.env
