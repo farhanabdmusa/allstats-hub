@@ -28,6 +28,7 @@
 
 .bump-version:
   needs: ["get-version"]
+  image: bitnami/git
   only:
     - development
     - main
