@@ -10,6 +10,7 @@
     - git config --global user.email "${GITLAB_USER_EMAIL}"
   script:
     - echo "Create tag v$VERSION"
+    - git tag -l | xargs git tag -d
     - git tag "v$VERSION"
     - git push --tags https://gitlab-ci-token:${CI_JOB_TOKEN}@$CI_SERVER_HOST/$CI_PROJECT_PATH.git HEAD:master
 
