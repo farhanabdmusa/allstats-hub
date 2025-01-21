@@ -13,20 +13,17 @@
   script: 
     - VERSION=$(grep '"version"' composer.json | cut -d':' -f2 | tr -d ' ",')
     - echo "Version $VERSION"
-    - echo "VERSION=$VERSION" >> .env
-    - echo "APPLICATION_VERSION=$VERSION" >> .env
-    - echo "TODO - Tagging Gitlab"
+    - echo "VERSION=$VERSION" >> build.env
   artifacts:
     reports:
-      dotenv: .env
+      dotenv: build.env
 
 .create-tag:
   image: bitnami/git:latest
-  dependencies:
-    - get-version
+  needs: ["get-version"]
   script:
     - echo "Creating a new tag"
-    - echo "(read from dotenv) VERSION=$VERSION" > .env
+    - echo "(read from dotenv) VERSION=$VERSION"
     - echo "Version $VERSION"
     - echo "TODO - Tagging Gitlab"
     - git config user.email "${GITLAB_USER_EMAIL}"
@@ -36,15 +33,14 @@
 
 .build-buildah-image:
   image: quay.io/containers/aio:latest
-  dependencies:
-    - get-version
+  needs: ["get-version"]
   variables:
     IMAGE_TAG: $QUAY_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:$VERSION
   before_script:
     - echo "Logging into Quay Container Registry"
     - buildah login -u "$QUAY_USER" --password "$QUAY_PASSWORD" "$QUAY_REGISTRY"
   script:
-    - echo "(read from dotenv) VERSION=$VERSION" > .env
+    - echo "(read from dotenv) VERSION=$VERSION"
     - echo "Building $IMAGE_TAG"
     - buildah bud -t "$IMAGE_TAG"
     - echo "Pushing the container image"
