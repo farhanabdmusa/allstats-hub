@@ -1,5 +1,4 @@
-.get-version-laravel:
-  image: busybox:latest
+.valid-branch:
   rules:
     - if: '$CI_COMMIT_BRANCH =~ /.*hotfix.*/'  # Matches branches starting with 'hotfix/'
       when: always
@@ -10,6 +9,11 @@
     - if: $CI_COMMIT_BRANCH == "main"
       when: always
     - when: never
+
+.get-version-laravel:
+  rules:
+    - !reference [.valid-branch, rules]
+  image: registry.bps.go.id/mirror/busybox
   script: 
     - VERSION=$(grep \'version\' config/app.php | cut -d'>' -f2 | tr -d " ',")
     - if [[ "$CI_COMMIT_BRANCH" != "main" && "$CI_COMMIT_BRANCH" != hotfix* ]]; then VERSION="${CI_COMMIT_BRANCH}-${VERSION}"; fi
@@ -20,6 +24,8 @@
       dotenv: build.env
 
 .build-buildah-image:
+  rules:
+    - !reference [.valid-branch, rules]
   image: registry.bps.go.id/cache/containers/aio
   needs: ["get-version"]
   variables:
