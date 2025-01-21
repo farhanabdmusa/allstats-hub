@@ -16,7 +16,7 @@
   image: registry.bps.go.id/mirror/busybox
   script: 
     - VERSION=$(grep \'version\' config/app.php | cut -d'>' -f2 | tr -d " ',")
-    - if [[ "$CI_COMMIT_BRANCH" != "main" && "$CI_COMMIT_BRANCH" != hotfix* ]]; then VERSION="${CI_COMMIT_BRANCH}-${VERSION}"; fi
+    - if [[ "$CI_COMMIT_BRANCH" != "main" && "$CI_COMMIT_BRANCH" != hotfix* ]]; then VERSION="${CI_COMMIT_BRANCH}-${VERSION}-${CI_COMMIT_SHORT_SHA}"; fi
     - echo "Version $VERSION"
     - echo "VERSION=$VERSION" >> build.env
   artifacts:
