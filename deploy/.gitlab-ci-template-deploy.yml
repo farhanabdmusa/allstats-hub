@@ -10,3 +10,4 @@
   release:                                         # See https://docs.gitlab.com/ee/ci/yaml/#release for available properties
     tag_name: 'v$VERSION.$CI_PIPELINE_IID'                # The version is incremented per pipeline.
     name: 'Release v$VERSION.$CI_PIPELINE_IID'
+    description: 'Release created using the release-cli.'
