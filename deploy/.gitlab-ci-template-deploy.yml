@@ -10,6 +10,6 @@
   script:
     - echo "running release_job for $VERSION"
   release:                                         # See https://docs.gitlab.com/ee/ci/yaml/#release for available properties
-    tag_name: 'v$VERSION.$CI_PIPELINE_IID'                # The version is incremented per pipeline.
-    name: 'Release v$VERSION.$CI_PIPELINE_IID'
+    tag_name: 'v$VERSION'
+    name: 'Release v$VERSION'
     description: 'Release created using the release-cli.'
