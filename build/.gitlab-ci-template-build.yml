@@ -22,9 +22,7 @@
   image: bitnami/git:latest
   needs: ["get-version"]
   script:
-    - echo "Creating a new tag"
-    - echo "(read from dotenv) VERSION=$VERSION"
-    - echo "Version $VERSION"
+    - echo "Creating tag $VERSION"
     - echo "TODO - Tagging Gitlab"
     - git config user.email "${GITLAB_USER_EMAIL}"
     - git config user.name "${GITLAB_USER_NAME}"
@@ -40,10 +38,9 @@
     - echo "Logging into Quay Container Registry"
     - buildah login -u "$QUAY_USER" --password "$QUAY_PASSWORD" "$QUAY_REGISTRY"
   script:
-    - echo "(read from dotenv) VERSION=$VERSION"
     - echo "Building $IMAGE_TAG"
     - buildah bud -t "$IMAGE_TAG"
-    - echo "Pushing the container image"
+    - echo "Pushing $IMAGE_TAG"
     - buildah push "$IMAGE_TAG"
   only:
     - development
