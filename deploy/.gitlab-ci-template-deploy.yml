@@ -1,3 +1,15 @@
+.valid-branch:
+  rules:
+    - if: '$CI_COMMIT_BRANCH =~ /.*hotfix.*/'  # Matches branches starting with 'hotfix/'
+      when: always
+    - if: $CI_COMMIT_BRANCH == "development"
+      when: always
+    - if: $CI_COMMIT_BRANCH == "staging"
+      when: always
+    - if: $CI_COMMIT_BRANCH == "main"
+      when: always
+    - when: never
+
 .release-job:
   needs: ["get-version"]
   image: registry.gitlab.com/gitlab-org/release-cli:latest
@@ -13,3 +25,23 @@
     tag_name: 'v$VERSION'
     name: 'Release v$VERSION'
     description: 'Release created using the release-cli.'
+
+.bump-version:
+  needs: ["get-version"]
+  only:
+    - development
+    - main
+  before_script:
+    - git config --global user.name "${GITLAB_USER_NAME}"
+    - git config --global user.email "${GITLAB_USER_EMAIL}"
+  script:
+    - |
+      echo "Cloning https://gitlab-ci-token:${CI_JOB_TOKEN}@${CI_PROJECT_URL#https://}-gitops"
+      git clone https://gitlab-ci-token:${CI_JOB_TOKEN}@${CI_PROJECT_URL#https://}-gitops
+      cd $CI_PROJECT_NAMESPACE-gitops/apps/$CI_PROJECT_NAME/envs
+      if [ "$CI_COMMIT_BRANCH" == "development" ]; then find *dev -type f -name "version.yml" -exec sed -i "/^[[:space:]]*image:/s/:[^:]*$/:$VERSION/" {} +; fi
+      if [ "$CI_COMMIT_BRANCH" == "main" ]; then find *prod -type f -name "version.yml" -exec sed -i "/^[[:space:]]*image:/s/:[^:]*$/:$VERSION/" {} +; fi
+      git diff --quiet HEAD^ HEAD || (echo "Changes detected, proceeding with pipeline" && exit 0)
+      git add .
+      git commit -m "bump image version to $VERSION"
+      git push https://gitlab-ci-token:${CI_JOB_TOKEN}@${CI_PROJECT_URL#https://}-gitops HEAD:main
