@@ -36,9 +36,6 @@
   script:
     - echo "Building $IMAGE_TAG"
     #- buildah bud -t "$IMAGE_TAG"
-    - buildah build --cache-from ${IMAGE_TAG}-cache \
-      --tag ${IMAGE_TAG} \
-      --cache-to ${IMAGE_TAG}-cache \
-      --layers --storage-driver overlay2
+    - buildah bud --cache-from ${IMAGE_TAG}-cache --tag ${IMAGE_TAG} -cache-to ${IMAGE_TAG}-cache --layers --storage-driver overlay2
     - echo "Pushing $IMAGE_TAG"
     - buildah push "$IMAGE_TAG"
