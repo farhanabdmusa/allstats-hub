@@ -28,9 +28,9 @@
 
 .bump-gitops:
   needs: ["get-version"]
-  strategy: depend
   variables:
     APP: $CI_PROJECT_NAME
     VERSION: $VERSION
   trigger:
     project: ${CI_PROJECT_NAMESPACE}/${CI_PROJECT_NAMESPACE}-gitops
+    strategy: depend
