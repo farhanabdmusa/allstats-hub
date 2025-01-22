@@ -40,3 +40,7 @@
     - buildah bud --cache-from ${IMAGE_REPO} --tag ${IMAGE_TAG} --cache-to ${IMAGE_REPO} --layers --storage-driver overlay2
     - echo "Pushing $IMAGE_TAG"
     - buildah push "$IMAGE_TAG"
+    - echo "VERSION=$VERSION" >> build.env
+  artifacts:
+    reports:
+      dotenv: build.env
