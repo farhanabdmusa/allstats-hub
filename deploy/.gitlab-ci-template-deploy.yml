@@ -28,6 +28,10 @@
 
 .bump-gitops:
   needs: ["get-version"]
+  strategy: depend
+  only:
+    - main
+    - development
   variables:
     APP: $CI_PROJECT_NAME
     VERSION: $VERSION
