@@ -38,3 +38,7 @@
     - buildah bud -t "$IMAGE_TAG"
     - echo "Pushing $IMAGE_TAG"
     - buildah push "$IMAGE_TAG"
+    - echo "APP=$APP" >> build.env
+  artifacts:
+    reports:
+      dotenv: build.env
