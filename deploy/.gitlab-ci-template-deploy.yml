@@ -27,7 +27,7 @@
     description: 'Release created using the release-cli.'
 
 .bump-gitops:
-  needs: ["get-version"]
+  needs: ["build-image"]
   variables:
     APP: $CI_PROJECT_NAME
     VERSION: $VERSION
