@@ -29,13 +29,14 @@
   image: registry.bps.go.id/cache/containers/aio
   needs: ["get-version"]
   variables:
-    IMAGE_TAG: $QUAY_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:$VERSION
+    IMAGE_REPO: $QUAY_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME
+    IMAGE_TAG: $IMAGE_REPO:$VERSION
   before_script:
     - echo "Logging into Quay Container Registry"
     - buildah login -u "$QUAY_USER" --password "$QUAY_PASSWORD" "$QUAY_REGISTRY"
   script:
     - echo "Building $IMAGE_TAG"
     #- buildah bud -t "$IMAGE_TAG"
-    - buildah bud --cache-from ${IMAGE_TAG}-cache --tag ${IMAGE_TAG} --cache-to ${IMAGE_TAG}-cache --layers --storage-driver overlay2
+    - buildah bud --cache-from ${IMAGE_REPO} --tag ${IMAGE_TAG} --cache-to ${IMAGE_REPO} --layers --storage-driver overlay2
     - echo "Pushing $IMAGE_TAG"
     - buildah push "$IMAGE_TAG"
