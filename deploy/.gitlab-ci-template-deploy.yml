@@ -27,7 +27,11 @@
     description: 'Release created using the release-cli.'
 
 .bump-gitops:
+  needs: ["get-version"]
   variables:
     APP: $CI_PROJECT_NAME
+    VERSION: $VERSION
+  before_script:
+    - echo "Bumping $APP to $VERSION"
   trigger:
     project: ${CI_PROJECT_NAMESPACE}/${CI_PROJECT_NAMESPACE}-gitops
