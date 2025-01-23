@@ -31,6 +31,7 @@
   variables:
     APP: $CI_PROJECT_NAME
     VERSION: $VERSION
+    IMAGE_TAG: $IMAGE_TAG
   trigger:
     project: ${CI_PROJECT_NAMESPACE}/${CI_PROJECT_NAMESPACE}-gitops
     strategy: depend
