@@ -34,7 +34,7 @@
     - echo "Logging into Quay Container Registry"
     - buildah login -u "$QUAY_USER" --password "$QUAY_PASSWORD" "$QUAY_REGISTRY"
   script:
-    - if [[ "$CI_COMMIT_BRANCH" != "main" && "$CI_COMMIT_BRANCH" != hotfix* ]]; then IMAGE_REPO="${IMAGE_REPO}/${CI_COMMIT_BRANCH}:${VERSION}"; fi
+    - if [[ "$CI_COMMIT_BRANCH" != "main" && "$CI_COMMIT_BRANCH" != hotfix* ]]; then IMAGE_REPO="${IMAGE_REPO}/${CI_COMMIT_BRANCH}"; fi
     - export IMAGE_TAG=${IMAGE_REPO}:${VERSION}
     - echo "Pull ${IMAGE_REPO}:latest with hope it useful for cachin"
     - buildah pull ${IMAGE_REPO}:latest || true
