@@ -35,7 +35,7 @@
     - echo "Logging into Quay Container Registry"
     - buildah login -u "$QUAY_USER" --password "$QUAY_PASSWORD" "$QUAY_REGISTRY"
   script:
-    - if [[ "$CI_COMMIT_BRANCH" != "main" && "$CI_COMMIT_BRANCH" != hotfix* ]]; then IMAGE_TAG="${IMAGE_REPO}:${CI_COMMIT_BRANCH}-${VERSION}"; fi
+    - if [[ "$CI_COMMIT_BRANCH" != "main" && "$CI_COMMIT_BRANCH" != hotfix* ]]; then IMAGE_TAG="${IMAGE_REPO}/${CI_COMMIT_BRANCH}:${VERSION}"; fi
     - echo "Building $IMAGE_TAG"
     #- buildah bud -t "$IMAGE_TAG"
     - buildah bud --cache-from ${IMAGE_REPO}/cache --tag ${IMAGE_TAG} --cache-to ${IMAGE_REPO}/cache --layers --storage-driver overlay2 --pull=newer
