@@ -33,18 +33,20 @@
   before_script:
     - echo "Logging into Quay Container Registry"
     - buildah login -u "$QUAY_USER" --password "$QUAY_PASSWORD" "$QUAY_REGISTRY"
+    - echo "Logging into Gitlab Container Registry for caching"
+    - buildah login -u "$CI_REGISTRY_USER" --password "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
   script:
     - if [[ "$CI_COMMIT_BRANCH" != "main" && "$CI_COMMIT_BRANCH" != hotfix* ]]; then IMAGE_REPO="${IMAGE_REPO}/${CI_COMMIT_BRANCH}"; fi
     - export IMAGE_TAG=${IMAGE_REPO}:${VERSION}
-    - echo "Pull ${IMAGE_REPO}:latest with hope it useful for cachin"
-    - buildah pull ${IMAGE_REPO}:latest || true
+    #- echo "Pull ${IMAGE_REPO}:latest with hope it useful for cachin"
+    #- buildah pull ${IMAGE_REPO}:latest || true
     - echo "Building $IMAGE_TAG"
     #- buildah bud --cache-from ${IMAGE_REPO}/cache --tag ${IMAGE_TAG} --cache-to ${IMAGE_REPO}/cache --layers --storage-driver overlay2 --pull=newer
-    #- buildah bud --cache-from ${CI_REGISTRY_IMAGE}/cache --tag ${IMAGE_TAG} --cache-to ${CI_REGISTRY_IMAGE}/cache --layers --storage-driver overlay2 --pull=newer
-    - buildah bud --tag ${IMAGE_TAG} --tag ${IMAGE_REPO}:latest --layers --pull=newer
+    - buildah bud --cache-from ${CI_REGISTRY_IMAGE}/cache --tag ${IMAGE_TAG} --cache-to ${CI_REGISTRY_IMAGE}/cache --layers --storage-driver overlay2 --pull=newer
+    #- buildah bud --tag ${IMAGE_TAG} --tag ${IMAGE_REPO}:latest --layers --pull=newer
     - echo "Pushing $IMAGE_TAG"
     - buildah push ${IMAGE_TAG}
-    - buildah push ${IMAGE_REPO}:latest
+    #- buildah push ${IMAGE_REPO}:latest
     - echo "VERSION=$VERSION" >> build.env
     - echo "IMAGE_TAG=$IMAGE_TAG" >> build.env
   artifacts:
