@@ -37,7 +37,7 @@
   script:
     - echo "Building $IMAGE_TAG"
     #- buildah bud -t "$IMAGE_TAG"
-    - buildah bud --cache-from ${IMAGE_REPO} --tag ${IMAGE_TAG} --cache-to ${IMAGE_REPO} --layers --storage-driver overlay2 --pull newer
+    - buildah bud --cache-from ${IMAGE_REPO}-cache --tag ${IMAGE_TAG} --cache-to ${IMAGE_REPO}-cache --layers --storage-driver overlay2 --pull newer
     - echo "Pushing $IMAGE_TAG"
     - buildah push "$IMAGE_TAG"
     - echo "VERSION=$VERSION" >> build.env
