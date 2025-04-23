@@ -29,6 +29,7 @@
   image: registry.bps.go.id/mirror/busybox
   script:
     - VERSION=$(cat version.txt)
+    - if [[ "$CI_COMMIT_BRANCH" != "main" && "$CI_COMMIT_BRANCH" != hotfix* ]]; then VERSION="${VERSION}-${CI_COMMIT_SHORT_SHA}"; fi
     - echo "Version $VERSION"
     - echo "VERSION=$VERSION" >> build.env
   artifacts:
