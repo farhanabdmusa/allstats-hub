@@ -23,6 +23,19 @@
     reports:
       dotenv: build.env
 
+.get-version-txt:
+  rules:
+    - !reference [.valid-branch, rules]
+  image: registry.bps.go.id/mirror/busybox
+  script:
+    - VERSION=$(cat version.txt)
+    - echo "Version $VERSION"
+    - echo "VERSION=$VERSION" >> build.env
+  artifacts:
+    reports:
+      dotenv: build.env
+
+
 .build-buildah-image:
   rules:
     - !reference [.valid-branch, rules]
