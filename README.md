@@ -1,1 +1,1 @@
-Template Repo
+Template Repository
