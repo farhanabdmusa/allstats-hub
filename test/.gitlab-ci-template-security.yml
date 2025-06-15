@@ -31,7 +31,7 @@ container_scanning:
   dependencies:
     - get-version
   variables:
-    SECURE_LOG_LEVEL: debug
     CS_IMAGE: $IMAGE_TAG
   before_script:
     - echo "Scanning image:" ${CS_IMAGE}
+    - trivy image --slow --parallel 1 --no-progress ${CS_IMAGE}
