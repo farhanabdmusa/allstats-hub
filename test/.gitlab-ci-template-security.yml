@@ -17,7 +17,7 @@ include:
     - when: never
 
 sast:
-  stage: test
+  stage: prep
 
 semgrep-sast: 
   rules:
@@ -26,7 +26,6 @@ semgrep-sast:
 
 dependency_scanning:
   stage: test
-  allow_failure: false
 
 gemnasium-maven-dependency_scanning:
   rules:
@@ -39,7 +38,7 @@ gemnasium-dependency_scanning:
   stage: test
 
 secret_detection:
-  stage: test
+  stage: prep
 
 container_scanning:
   rules:
@@ -48,7 +47,7 @@ container_scanning:
   dependencies:
     - get-version
   variables:
+    SECURE_LOG_LEVEL: debug
     CS_IMAGE: $IMAGE_TAG
     CS_REGISTRY_USER: $CI_REGISTRY_USER
     CS_REGISTRY_PASSWORD: $CI_REGISTRY_PASSWORD
-  allow_failure: false
