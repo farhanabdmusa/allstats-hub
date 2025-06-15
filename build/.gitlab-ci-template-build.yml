@@ -31,6 +31,8 @@
     - !reference [.valid-branch, rules]
   image: registry.bps.go.id/cache/containers/aio
   #needs: ["get-version"]
+  dependencies:
+    - get-version 
   before_script:
     - echo "Logging into Gitlab Container Registry"
     - buildah login -u "$CI_REGISTRY_USER" --password "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
