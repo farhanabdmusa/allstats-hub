@@ -14,18 +14,13 @@ include:
   - template: Jobs/Dependency-Scanning.gitlab-ci.yml
   - template: Jobs/Secret-Detection.gitlab-ci.yml
   - template: Jobs/SAST.gitlab-ci.yml
-#  - template: Jobs/Container-Scanning.gitlab-ci.yml
-  - template: Jobs/Container-Scanning.latest.gitlab-ci.yml
+  - template: Jobs/Container-Scanning.gitlab-ci.yml
+#  - template: Jobs/Container-Scanning.latest.gitlab-ci.yml
 
 #override to always run secret detection
 secret_detection:
   rules:
     - when: always
-
-#override to only run on valid-branch
-sast:
-  rules:
-    - !reference [.valid-branch, rules]
 
 #override to only run on valid-branch
 #override stage to scan stage, run after build stage
@@ -36,3 +31,5 @@ container_scanning:
   variables:
     SECURE_LOG_LEVEL: debug
     CS_IMAGE: $IMAGE_TAG
+  before_script:
+    - echo "Scanning image: $CS_IMAGE"
