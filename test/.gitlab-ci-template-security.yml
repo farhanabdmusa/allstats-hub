@@ -33,5 +33,6 @@ container_scanning:
   variables:
     CS_IMAGE: $IMAGE_TAG
   before_script:
+    - docker login -u "$CI_REGISTRY_USER" --password "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
     - echo "Scanning image:" ${CS_IMAGE}
-    - trivy image --slow --parallel 1 --no-progress ${CS_IMAGE}
+    - docker pull ${CS_IMAGE}
