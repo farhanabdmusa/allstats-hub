@@ -32,3 +32,4 @@ container_scanning:
     - get-version
   variables:
     CS_IMAGE: $IMAGE_TAG
+    TRIVY_NO_PROGRESS: "true"
