@@ -29,7 +29,7 @@ container_scanning:
     - !reference [.valid-branch, rules]
   stage: scan
   dependencies:
-    - build-image
+    - get-version
   variables:
     SECURE_LOG_LEVEL: debug
     CS_IMAGE: $IMAGE_TAG
