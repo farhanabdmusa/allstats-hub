@@ -32,4 +32,4 @@ container_scanning:
     SECURE_LOG_LEVEL: debug
     CS_IMAGE: $IMAGE_TAG
   before_script:
-    - echo "Scanning image: $CS_IMAGE"
+    - echo "Scanning image:" ${CS_IMAGE}
