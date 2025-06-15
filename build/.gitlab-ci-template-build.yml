@@ -10,19 +10,6 @@
       when: always
     - when: never
 
-.get-version-laravel:
-  rules:
-    - !reference [.valid-branch, rules]
-  image: registry.bps.go.id/mirror/busybox
-  script: 
-    - VERSION=$(grep \'version\' config/app.php | cut -d'>' -f2 | tr -d " ',")
-    - if [[ "$CI_COMMIT_BRANCH" != "main" && "$CI_COMMIT_BRANCH" != hotfix* ]]; then VERSION="${VERSION}-${CI_COMMIT_SHORT_SHA}"; fi
-    - echo "Version $VERSION"
-    - echo "VERSION=$VERSION" >> build.env
-  artifacts:
-    reports:
-      dotenv: build.env
-
 .get-version-txt:
   rules:
     - !reference [.valid-branch, rules]
@@ -36,25 +23,18 @@
     reports:
       dotenv: build.env
 
-
 .build-buildah-image:
   rules:
     - !reference [.valid-branch, rules]
   image: registry.bps.go.id/cache/containers/aio
   needs: ["get-version"]
-  variables:
-    IMAGE_REPO: $QUAY_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME
   before_script:
-    - echo "Logging into Quay Container Registry"
-    - buildah login -u "$QUAY_USER" --password "$QUAY_PASSWORD" "$QUAY_REGISTRY"
-    - echo "Logging into Gitlab Container Registry for caching"
+    - echo "Logging into Gitlab Container Registry"
     - buildah login -u "$CI_REGISTRY_USER" --password "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
   script:
-    - if [[ "$CI_COMMIT_BRANCH" != "main" && "$CI_COMMIT_BRANCH" != hotfix* ]]; then IMAGE_REPO="${IMAGE_REPO}/${CI_COMMIT_BRANCH}"; fi
-    - export IMAGE_TAG=${IMAGE_REPO}:${VERSION}
+    - export IMAGE_TAG=${CI_REGISTRY_IMAGE}/${CI_COMMIT_BRANCH}:${VERSION}
     - echo "Building $IMAGE_TAG"
     - buildah bud --cache-from ${CI_REGISTRY_IMAGE}/cache --tag ${IMAGE_TAG} --cache-to ${CI_REGISTRY_IMAGE}/cache --layers --pull=newer
-    #- buildah bud --tag ${IMAGE_TAG} --tag ${IMAGE_REPO}:latest --layers --pull=newer
     - echo "Pushing $IMAGE_TAG"
     - buildah push ${IMAGE_TAG}
     - echo "VERSION=$VERSION" >> build.env
@@ -62,3 +42,30 @@
   artifacts:
     reports:
       dotenv: build.env
+
+# old ci that push to quay, not used anymore
+# .build-buildah-quay:
+#   rules:
+#     - !reference [.valid-branch, rules]
+#   image: registry.bps.go.id/cache/containers/aio
+#   needs: ["get-version"]
+#   variables:
+#     IMAGE_REPO: $QUAY_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME
+#   before_script:
+#     - echo "Logging into Quay Container Registry"
+#     - buildah login -u "$QUAY_USER" --password "$QUAY_PASSWORD" "$QUAY_REGISTRY"
+#     - echo "Logging into Gitlab Container Registry for caching"
+#     - buildah login -u "$CI_REGISTRY_USER" --password "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
+#   script:
+#     - if [[ "$CI_COMMIT_BRANCH" != "main" && "$CI_COMMIT_BRANCH" != hotfix* ]]; then IMAGE_REPO="${IMAGE_REPO}/${CI_COMMIT_BRANCH}"; fi
+#     - export IMAGE_TAG=${IMAGE_REPO}:${VERSION}
+#     - echo "Building $IMAGE_TAG"
+#     - buildah bud --cache-from ${CI_REGISTRY_IMAGE}/cache --tag ${IMAGE_TAG} --cache-to ${CI_REGISTRY_IMAGE}/cache --layers --pull=newer
+#     #- buildah bud --tag ${IMAGE_TAG} --tag ${IMAGE_REPO}:latest --layers --pull=newer
+#     - echo "Pushing $IMAGE_TAG"
+#     - buildah push ${IMAGE_TAG}
+#     - echo "VERSION=$VERSION" >> build.env
+#     - echo "IMAGE_TAG=$IMAGE_TAG" >> build.env
+#   artifacts:
+#     reports:
+#       dotenv: build.env
