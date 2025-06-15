@@ -29,6 +29,6 @@ container_scanning:
     - !reference [.valid-branch, rules]
   stage: scan
   dependencies:
-    - build-image
+    - get-version
   variables:
     CS_IMAGE: $IMAGE_TAG
