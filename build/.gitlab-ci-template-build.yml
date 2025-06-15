@@ -18,7 +18,9 @@
     - VERSION=$(cat version.txt)
     - if [[ "$CI_COMMIT_BRANCH" != "main" && "$CI_COMMIT_BRANCH" != hotfix* ]]; then VERSION="${VERSION}-${CI_COMMIT_SHORT_SHA}"; fi
     - echo "Version $VERSION"
+    - export IMAGE_TAG=${CI_REGISTRY_IMAGE}/${CI_COMMIT_BRANCH}:${VERSION}
     - echo "VERSION=$VERSION" >> build.env
+    - echo "IMAGE_TAG=$IMAGE_TAG" >> build.env
   artifacts:
     reports:
       dotenv: build.env
@@ -32,7 +34,6 @@
     - echo "Logging into Gitlab Container Registry"
     - buildah login -u "$CI_REGISTRY_USER" --password "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
   script:
-    - export IMAGE_TAG=${CI_REGISTRY_IMAGE}/${CI_COMMIT_BRANCH}:${VERSION}
     - echo "Building $IMAGE_TAG"
     - buildah bud --cache-from ${CI_REGISTRY_IMAGE}/cache --tag ${IMAGE_TAG} --cache-to ${CI_REGISTRY_IMAGE}/cache --layers --pull=newer
     - echo "Pushing $IMAGE_TAG"

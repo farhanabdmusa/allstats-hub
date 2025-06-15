@@ -1,0 +1,54 @@
+include:
+  - template: Jobs/Dependency-Scanning.gitlab-ci.yml
+  - template: Jobs/Container-Scanning.gitlab-ci.yml
+  - template: Jobs/Secret-Detection.gitlab-ci.yml
+  - template: Security/SAST.gitlab-ci.yml
+
+.valid-branch:
+  rules:
+    - if: '$CI_COMMIT_BRANCH =~ /.*hotfix.*/'  # Matches branches starting with 'hotfix/'
+      when: always
+    - if: $CI_COMMIT_BRANCH == "development"
+      when: always
+    - if: $CI_COMMIT_BRANCH == "staging"
+      when: always
+    - if: $CI_COMMIT_BRANCH == "main"
+      when: always
+    - when: never
+
+sast:
+  stage: test
+
+semgrep-sast: 
+  rules:
+    - !reference [.valid-branch, rules]
+  stage: test
+
+dependency_scanning:
+  stage: test
+  allow_failure: false
+
+gemnasium-maven-dependency_scanning:
+  rules:
+    - !reference [.valid-branch, rules]
+  stage: test
+
+gemnasium-dependency_scanning:
+  rules:
+    - !reference [.valid-branch, rules]
+  stage: test
+
+secret_detection:
+  stage: test
+
+container_scanning:
+  rules:
+    - !reference [.valid-branch, rules]
+  stage: test
+  dependencies:
+    - get-version
+  variables:
+    CS_IMAGE: $IMAGE_TAG
+    CS_REGISTRY_USER: $CI_REGISTRY_USER
+    CS_REGISTRY_PASSWORD: $CI_REGISTRY_PASSWORD
+  allow_failure: false
