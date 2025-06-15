@@ -28,6 +28,8 @@ container_scanning:
   rules:
     - !reference [.valid-branch, rules]
   stage: scan
+  dependencies:
+    - build-image
   variables:
     SECURE_LOG_LEVEL: debug
     CS_IMAGE: $IMAGE_TAG
