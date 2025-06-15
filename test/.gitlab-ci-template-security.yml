@@ -12,42 +12,27 @@
     
 include:
   - template: Jobs/Dependency-Scanning.gitlab-ci.yml
-  - template: Jobs/Container-Scanning.gitlab-ci.yml
   - template: Jobs/Secret-Detection.gitlab-ci.yml
-  - template: Security/SAST.gitlab-ci.yml
+  - template: Jobs/SAST.gitlab-ci.yml
+#  - template: Jobs/Container-Scanning.gitlab-ci.yml
+  - template: Jobs/Container-Scanning.latest.gitlab-ci.yml
 
-sast:
-  stage: test
-
-semgrep-sast: 
-  rules:
-    - !reference [.valid-branch, rules]
-  stage: test
-
-dependency_scanning:
-  stage: test
-
-gemnasium-maven-dependency_scanning:
-  rules:
-    - !reference [.valid-branch, rules]
-  stage: test
-
-gemnasium-dependency_scanning:
-  rules:
-    - !reference [.valid-branch, rules]
-  stage: test
-
+#override to always run secret detection
 secret_detection:
-  stage: test
+  rules:
+    - when: always
 
+#override to only run on valid-branch
+sast:
+  rules:
+    - !reference [.valid-branch, rules]
+
+#override to only run on valid-branch
+#override stage to scan stage, run after build stage
 container_scanning:
   rules:
     - !reference [.valid-branch, rules]
   stage: scan
-  dependencies:
-    - get-version
   variables:
     SECURE_LOG_LEVEL: debug
     CS_IMAGE: $IMAGE_TAG
-    CS_REGISTRY_USER: $CI_REGISTRY_USER
-    CS_REGISTRY_PASSWORD: $CI_REGISTRY_PASSWORD
