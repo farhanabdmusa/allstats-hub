@@ -40,8 +40,3 @@
     - buildah bud --cache-from ${CI_REGISTRY_IMAGE}/cache --tag ${IMAGE_TAG} --cache-to ${CI_REGISTRY_IMAGE}/cache --layers --pull=newer
     - echo "Pushing $IMAGE_TAG"
     - buildah push ${IMAGE_TAG}
-    - echo "VERSION=$VERSION" >> build.env
-    - echo "IMAGE_TAG=$IMAGE_TAG" >> build.env
-  artifacts:
-    reports:
-      dotenv: build.env

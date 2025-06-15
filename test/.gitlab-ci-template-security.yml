@@ -11,16 +11,16 @@
     - when: never
     
 include:
-#  - template: Jobs/Dependency-Scanning.gitlab-ci.yml
-#  - template: Jobs/Secret-Detection.gitlab-ci.yml
-#  - template: Jobs/SAST.gitlab-ci.yml
+  - template: Jobs/Dependency-Scanning.gitlab-ci.yml
+  - template: Jobs/Secret-Detection.gitlab-ci.yml
+  - template: Jobs/SAST.gitlab-ci.yml
   - template: Jobs/Container-Scanning.gitlab-ci.yml
-#  - template: Jobs/Container-Scanning.latest.gitlab-ci.yml
 
 #override to always run secret detection
-#secret_detection:
-#  rules:
-#    - when: always
+secret_detection:
+  rules:
+    - when: always
+  allow_failure: false
 
 #override to only run on valid-branch
 #override stage to scan stage, run after build stage
@@ -29,7 +29,6 @@ container_scanning:
     - !reference [.valid-branch, rules]
   stage: scan
   dependencies:
-    - get-version
+    - build-image
   variables:
     CS_IMAGE: $IMAGE_TAG
-    TRIVY_NO_PROGRESS: "true"
