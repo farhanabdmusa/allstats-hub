@@ -17,7 +17,7 @@ include:
     - when: never
 
 sast:
-  stage: prep
+  stage: test
 
 semgrep-sast: 
   rules:
@@ -38,12 +38,12 @@ gemnasium-dependency_scanning:
   stage: test
 
 secret_detection:
-  stage: prep
+  stage: test
 
 container_scanning:
   rules:
     - !reference [.valid-branch, rules]
-  stage: test
+  stage: scan
   dependencies:
     - get-version
   variables:

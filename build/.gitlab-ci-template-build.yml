@@ -17,8 +17,9 @@
   script:
     - VERSION=$(cat version.txt)
     - if [[ "$CI_COMMIT_BRANCH" != "main" && "$CI_COMMIT_BRANCH" != hotfix* ]]; then VERSION="${VERSION}-${CI_COMMIT_SHORT_SHA}"; fi
-    - echo "Version $VERSION"
-    - export IMAGE_TAG=${CI_REGISTRY_IMAGE}/${CI_COMMIT_BRANCH}:${VERSION}
+    - IMAGE_TAG=${CI_REGISTRY_IMAGE}/${CI_COMMIT_BRANCH}:${VERSION}
+    - echo "$CI_PROJECT_NAME Version is $VERSION"
+    - echo "$IMAGE_TAG is $IMAGE_TAG"
     - echo "VERSION=$VERSION" >> build.env
     - echo "IMAGE_TAG=$IMAGE_TAG" >> build.env
   artifacts:
@@ -29,7 +30,7 @@
   rules:
     - !reference [.valid-branch, rules]
   image: registry.bps.go.id/cache/containers/aio
-  needs: ["get-version"]
+  #needs: ["get-version"]
   before_script:
     - echo "Logging into Gitlab Container Registry"
     - buildah login -u "$CI_REGISTRY_USER" --password "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
