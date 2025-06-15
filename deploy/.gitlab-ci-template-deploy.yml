@@ -31,7 +31,7 @@
 .bump-gitops:
   #needs: ["build-image"]
   dependencies:
-    - get-version
+    - build-image
   variables:
     APP: $CI_PROJECT_NAME
     VERSION: $VERSION
