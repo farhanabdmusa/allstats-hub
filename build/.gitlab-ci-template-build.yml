@@ -19,7 +19,7 @@
     - if [[ "$CI_COMMIT_BRANCH" != "main" && "$CI_COMMIT_BRANCH" != hotfix* ]]; then VERSION="${VERSION}-${CI_COMMIT_SHORT_SHA}"; fi
     - IMAGE_TAG=${CI_REGISTRY_IMAGE}/${CI_COMMIT_BRANCH}:${VERSION}
     - echo "$CI_PROJECT_NAME Version is $VERSION"
-    - echo "$IMAGE_TAG is $IMAGE_TAG"
+    - echo "$CI_PROJECT_NAME Imagetag is $IMAGE_TAG"
     - echo "VERSION=$VERSION" >> build.env
     - echo "IMAGE_TAG=$IMAGE_TAG" >> build.env
   artifacts:
