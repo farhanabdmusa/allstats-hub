@@ -11,6 +11,7 @@ stages:
   - test
   - build
   - scan
+  - release
   - deploy
 
 get-version:
@@ -29,5 +30,5 @@ bump-version:
     - development
 
 release:
-  stage: deploy
+  stage: release
   extends: .release-job
