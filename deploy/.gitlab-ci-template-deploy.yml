@@ -32,8 +32,9 @@
   #needs: ["build-image"]
   variables:
     APP: $CI_PROJECT_NAME
+    APP_BRANCH: $CI_COMMIT_BRANCH
     VERSION: $VERSION
     IMAGE_TAG: $IMAGE_TAG
   trigger:
-    project: ${CI_PROJECT_ROOT_NAMESPACE}/${CI_PROJECT_NAMESPACE}-gitops
+    project: ${CI_PROJECT_ROOT_NAMESPACE}/${CI_PROJECT_ROOT_NAMESPACE}-gitops
     strategy: depend
