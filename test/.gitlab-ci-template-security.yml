@@ -16,6 +16,12 @@ include:
   - template: Jobs/SAST.gitlab-ci.yml
   - template: Jobs/Container-Scanning.gitlab-ci.yml
 
+#enforce enable
+sast:
+  stage: test
+  variables:
+    SAST_DISABLED: "false"
+
 #override to always run secret detection
 secret_detection:
   rules:
