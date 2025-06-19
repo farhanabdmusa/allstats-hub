@@ -22,7 +22,7 @@ build-image:
   stage: build
   extends: .build-buildah-image
 
-apply-manifest:
+apply-kustomize:
   stage: deploy
   extends: .deploy-k8s
   only:
