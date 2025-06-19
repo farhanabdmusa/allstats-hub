@@ -12,6 +12,7 @@ stages:
   - build
   - scan
   - release
+  - deploy
 
 get-version:
   stage: prep
@@ -20,6 +21,13 @@ get-version:
 build-image:
   stage: build
   extends: .build-buildah-image
+
+apply-manifest:
+  stage: deploy
+  extends: .deploy-k8s
+  only:
+    - main
+    - development
 
 release:
   stage: release

@@ -16,11 +16,22 @@ include:
   - template: Jobs/SAST.gitlab-ci.yml
   - template: Jobs/Container-Scanning.gitlab-ci.yml
 
-#enforce enable
 sast:
   stage: test
-  variables:
-    SAST_DISABLED: "false"
+
+semgrep-sast: 
+  rules:
+    - !reference [.valid-branch, rules]
+  stage: test
+
+dependency_scanning:
+  stage: test
+  allow_failure: false
+
+gemnasium-dependency_scanning:
+  rules:
+    - !reference [.valid-branch, rules]
+  stage: test
 
 #override to always run secret detection
 secret_detection:
