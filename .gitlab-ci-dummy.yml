@@ -1,0 +1,19 @@
+include:
+  - template: Jobs/Secret-Detection.gitlab-ci.yml
+
+stages:
+  - test
+  - dummy
+
+secret_detection:
+  rules:
+    - when: always
+  allow_failure: false
+
+dummy:
+  stage: dummy
+  image: registry.bps.go.id/mirror/busybox
+  script:
+    - echo "🔧 This is dummy pipeline, for real deployment create issue and ping your project maintainer"
+    - export VERSION=$(cat version.txt)
+    - echo "${CI_PROJECT_NAME} version ${VERSION} created by team ${CI_PROJECT_ROOT_NAMESPACE}"
