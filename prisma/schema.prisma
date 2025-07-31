@@ -1,0 +1,31 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model sign_up_type {
+  id   Int    @id(map: "sign_up_type_pk") @default(autoincrement())
+  name String @unique(map: "sign_up_type_unique") @db.VarChar
+  user user?
+}
+
+model user {
+  id             Int          @id(map: "user_pk") @default(autoincrement())
+  uuid           String       @unique(map: "user_unique") @db.VarChar
+  email          String       @unique(map: "user_unique_email") @db.VarChar
+  new_version    Boolean      @default(true)
+  first_session  DateTime     @db.Timestamp(6)
+  last_session   DateTime     @db.Timestamp(6)
+  manufacturer   String?      @db.VarChar
+  model          String?      @db.VarChar
+  os             String?      @db.VarChar
+  os_version     String?      @db.VarChar
+  is_virtual     Boolean      @default(false)
+  last_ip        String?      @db.VarChar
+  sign_up_type   Int?
+  sign_up_type_f sign_up_type @relation(fields: [id], references: [id], map: "user_sign_up_type_fk")
+}

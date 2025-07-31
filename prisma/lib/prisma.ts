@@ -1,0 +1,26 @@
+import { PrismaClient } from "@prisma/client";
+
+declare global {
+    // eslint-disable-next-line no-var
+    var __prisma__: PrismaClient
+}
+
+let prisma: PrismaClient
+
+/**
+ * this is needed because in development we don't want to restart
+ * the server with every change, but we want to make sure we don't
+ * create a new connection to the DB with every change either.
+ * in production, we'll have a single connection to the DB.
+ */
+if (process.env.NODE_ENV === "production") {
+    prisma = new PrismaClient();
+} else {
+    if (!global.__prisma__) {
+        global.__prisma__ = new PrismaClient();
+    }
+
+    prisma = global.__prisma__
+}
+
+export default prisma;
