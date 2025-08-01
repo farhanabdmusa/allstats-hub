@@ -14,18 +14,18 @@ model sign_up_type {
 }
 
 model user {
-  id                                           Int           @id(map: "user_pk") @default(autoincrement())
-  uuid                                         String        @unique(map: "user_unique") @db.VarChar
-  email                                        String?       @unique(map: "user_unique_email") @db.VarChar
-  new_version                                  Boolean       @default(true)
-  first_session                                DateTime      @default(now()) @db.Timestamptz(6)
-  last_session                                 DateTime      @default(now()) @db.Timestamptz(6)
-  manufacturer                                 String?       @db.VarChar
-  device_model                                 String?       @db.VarChar
-  os                                           String?       @db.VarChar
-  os_version                                   String?       @db.VarChar
-  is_virtual                                   Boolean       @default(false)
-  last_ip                                      String?       @db.VarChar
-  sign_up_type                                 Int?
-  sign_up_type_user_sign_up_typeTosign_up_type sign_up_type? @relation("user_sign_up_typeTosign_up_type", fields: [sign_up_type], references: [id], onDelete: Restrict, map: "user_sign_up_type_fk")
+  id                Int           @id(map: "user_pk") @default(autoincrement())
+  uuid              String        @unique(map: "user_unique") @db.VarChar
+  email             String?       @unique(map: "user_unique_email") @db.VarChar
+  new_version       Boolean       @default(true)
+  first_session     DateTime      @default(now()) @db.Timestamptz(6)
+  last_session      DateTime      @default(now()) @db.Timestamptz(6)
+  manufacturer      String?       @db.VarChar
+  device_model      String?       @db.VarChar
+  os                String?       @db.VarChar
+  os_version        String?       @db.VarChar
+  is_virtual        Boolean       @default(false)
+  last_ip           String?       @db.VarChar
+  sign_up_type      Int?
+  sign_up_type_name sign_up_type? @relation("user_sign_up_typeTosign_up_type", fields: [sign_up_type], references: [id], onDelete: Restrict, map: "user_sign_up_type_fk")
 }
