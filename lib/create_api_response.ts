@@ -1,9 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from "next/server";
 
-const createApiResponse = ({ status, data, message, statusCode = 200 }: {
+const createApiResponse = ({ status, data, zodError, message, statusCode = 200 }: {
     status: boolean;
     data?: Map<string, any>;
+    zodError?: any;
     message?: string;
     statusCode?: number;
 }) => {
@@ -11,6 +12,7 @@ const createApiResponse = ({ status, data, message, statusCode = 200 }: {
         status,
         data,
         message,
+        zodError
     }, {
         status: statusCode
     });
