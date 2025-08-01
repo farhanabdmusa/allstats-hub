@@ -4,6 +4,7 @@ import prisma from "@/lib/prisma";
 import { CreateUserPayload } from '@/types/user';
 import { ApiResponse } from "@/types/response";
 import createApiResponse from "@/lib/create_api_response";
+import { getCurrentDateTime } from "@/lib/jakarta_datetime";
 
 export async function POST(request: NextRequest) {
     const formData = await request.json() as CreateUserPayload;
@@ -17,9 +18,16 @@ export async function POST(request: NextRequest) {
     }
 
     try {
-        await prisma.user.create({
-            data: formData,
-            select: { id: true }
+        console.log(getCurrentDateTime());
+        await prisma.user.upsert({
+            create: formData,
+            update: {
+                ...formData,
+                last_session: getCurrentDateTime()!
+            },
+            where: {
+                uuid: formData.uuid
+            }
         })
 
         return createApiResponse({

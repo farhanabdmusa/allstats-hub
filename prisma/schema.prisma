@@ -18,8 +18,8 @@ model user {
   uuid                                         String        @unique(map: "user_unique") @db.VarChar
   email                                        String?       @unique(map: "user_unique_email") @db.VarChar
   new_version                                  Boolean       @default(true)
-  first_session                                DateTime      @default(now()) @db.Timestamp(6)
-  last_session                                 DateTime      @default(now()) @db.Timestamp(6)
+  first_session                                DateTime      @default(now()) @db.Timestamptz(6)
+  last_session                                 DateTime      @default(now()) @db.Timestamptz(6)
   manufacturer                                 String?       @db.VarChar
   device_model                                 String?       @db.VarChar
   os                                           String?       @db.VarChar
