@@ -8,24 +8,54 @@ datasource db {
 }
 
 model sign_up_type {
-  id                                   Int    @id(map: "sign_up_type_pk") @default(autoincrement())
-  name                                 String @unique(map: "sign_up_type_unique") @db.VarChar
-  user_user_sign_up_typeTosign_up_type user[] @relation("user_sign_up_typeTosign_up_type")
+  id            Int    @id(map: "sign_up_type_pk") @default(autoincrement())
+  name          String @unique(map: "sign_up_type_unique") @db.VarChar
+  user_relation user[] @relation("user_sign_up_typeTosign_up_type")
 }
 
 model user {
-  id                Int           @id(map: "user_pk") @default(autoincrement())
-  uuid              String        @unique(map: "user_unique") @db.VarChar
-  email             String?       @unique(map: "user_unique_email") @db.VarChar
-  new_version       Boolean       @default(true)
-  first_session     DateTime      @default(now()) @db.Timestamptz(6)
-  last_session      DateTime      @default(now()) @db.Timestamptz(6)
-  manufacturer      String?       @db.VarChar
-  device_model      String?       @db.VarChar
-  os                String?       @db.VarChar
-  os_version        String?       @db.VarChar
-  is_virtual        Boolean       @default(false)
-  last_ip           String?       @db.VarChar
-  sign_up_type      Int?
-  sign_up_type_name sign_up_type? @relation("user_sign_up_typeTosign_up_type", fields: [sign_up_type], references: [id], onDelete: Restrict, map: "user_sign_up_type_fk")
+  id                    Int                 @id(map: "user_pk") @default(autoincrement())
+  uuid                  String              @unique(map: "user_unique") @db.VarChar
+  email                 String?             @unique(map: "user_unique_email") @db.VarChar
+  new_version           Boolean             @default(true)
+  first_session         DateTime            @default(now()) @db.Timestamptz(6)
+  last_session          DateTime            @default(now()) @db.Timestamptz(6)
+  manufacturer          String?             @db.VarChar
+  device_model          String?             @db.VarChar
+  os                    String?             @db.VarChar
+  os_version            String?             @db.VarChar
+  is_virtual            Boolean             @default(false)
+  last_ip               String?             @db.VarChar
+  sign_up_type          Int?
+  sign_up_type_relation sign_up_type?       @relation("user_sign_up_typeTosign_up_type", fields: [sign_up_type], references: [id], onDelete: Restrict, map: "user_sign_up_type_fk")
+  user_like_product     user_like_product[]
+}
+
+model product_type {
+  id                         Int                 @id(map: "product_type_pk") @default(autoincrement())
+  name                       String              @unique(map: "product_type_unique") @db.VarChar
+  like_counter_relation      like_counter[]      @relation("like_counter_product_typeToproduct_type")
+  user_like_product_relation user_like_product[] @relation("user_like_product_product_typeToproduct_type")
+}
+
+model like_counter {
+  id                    Int          @id(map: "like_counter_pk") @default(autoincrement())
+  product_type          Int
+  product_id            Int
+  total                 Int          @default(0)
+  product_type_relation product_type @relation("like_counter_product_typeToproduct_type", fields: [product_type], references: [id], map: "like_counter_product_type_fk")
+
+  @@unique([product_type, product_id], map: "like_counter_unique")
+}
+
+model user_like_product {
+  id                    Int          @id(map: "like_product_pk") @default(autoincrement())
+  user_id               Int
+  product_type          Int
+  product_id            Int
+  timestamp             DateTime     @default(now()) @db.Timestamptz(6)
+  product_type_relation product_type @relation("user_like_product_product_typeToproduct_type", fields: [product_type], references: [id], map: "like_product_product_type_fk")
+  user_relation         user         @relation(fields: [user_id], references: [id], map: "like_product_user_fk")
+
+  @@unique([user_id, product_type, product_id], map: "like_product_unique")
 }
