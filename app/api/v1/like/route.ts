@@ -5,25 +5,29 @@ import z from "zod";
 
 const LikeSchema = z.object({
     user_id: z.int(),
-    type: z.int(),
-    product_id: z.int(),
+    product_type: z.int(),
+    mfd: z.string(),
+    product_id: z.string(),
 })
 
 const like = ({
     product_id,
-    type,
-    user_id
+    product_type,
+    user_id,
+    mfd,
 }: {
     user_id: number;
-    type: number;
-    product_id: number;
+    product_type: number;
+    product_id: string;
+    mfd: string;
 }) => {
     return prisma.$transaction(async (tx) => {
         await tx.user_like_product.create({
             data: {
-                product_id: product_id,
-                product_type: type,
-                user_id: user_id,
+                product_id,
+                product_type,
+                user_id,
+                mfd,
             }
         });
 
@@ -32,14 +36,16 @@ const like = ({
                 total: true,
             },
             where: {
-                product_type_product_id: {
-                    product_id: product_id,
-                    product_type: type,
+                mfd_product_type_product_id: {
+                    product_id,
+                    product_type,
+                    mfd,
                 }
             },
             create: {
-                product_id: product_id,
-                product_type: type,
+                product_id,
+                product_type,
+                mfd,
                 total: 1
             },
             update: {
@@ -54,20 +60,23 @@ const like = ({
 
 const unlike = ({
     product_id,
-    type,
-    user_id
+    product_type,
+    user_id,
+    mfd,
 }: {
     user_id: number;
-    type: number;
-    product_id: number;
+    product_type: number;
+    product_id: string;
+    mfd: string;
 }) => {
     return prisma.$transaction(async (tx) => {
         await tx.user_like_product.delete({
             where: {
-                user_id_product_type_product_id: {
-                    product_id: product_id,
-                    product_type: type,
-                    user_id: user_id,
+                user_id_mfd_product_type_product_id: {
+                    product_id,
+                    product_type,
+                    mfd,
+                    user_id
                 }
             }
         });
@@ -77,15 +86,17 @@ const unlike = ({
                 total: true,
             },
             where: {
-                product_type_product_id: {
-                    product_id: product_id,
-                    product_type: type,
+                mfd_product_type_product_id: {
+                    product_id,
+                    product_type,
+                    mfd,
                 }
             },
             create: {
-                product_id: product_id,
-                product_type: type,
-                total: 1
+                product_id,
+                product_type,
+                mfd,
+                total: 0,
             },
             update: {
                 total: { decrement: 1 }
@@ -93,6 +104,46 @@ const unlike = ({
         })
 
         return total.total;
+    })
+
+}
+
+export async function GET(request: NextRequest) {
+    const searchParams = request.nextUrl.searchParams;
+    const product_id = searchParams.get("product_id");
+    const mfd = searchParams.get("mfd");
+    const product_type = Number(searchParams.get("product_type"));
+
+    const schema = z.object({
+        product_id: z.string(),
+        product_type: z.int(),
+        mfd: z.string(),
+    });
+
+    const validatedData = schema.safeParse({
+        product_id,
+        product_type,
+        mfd,
+    })
+
+    if (!validatedData.success) {
+        return createApiResponse({
+            status: false,
+            statusCode: 422,
+            zodError: z.treeifyError(validatedData.error),
+        })
+    }
+
+    const result = await prisma.like_counter.findUnique({
+        where: {
+            mfd_product_type_product_id: validatedData.data
+        }
+    })
+    return createApiResponse({
+        status: true,
+        data: {
+            total: result?.total ?? 0
+        }
     })
 
 }
@@ -111,11 +162,7 @@ export async function POST(request: NextRequest) {
         }
         const check = await prisma.user_like_product.findUnique({
             where: {
-                user_id_product_type_product_id: {
-                    product_id: validatedData.data.product_id,
-                    product_type: validatedData.data.type,
-                    user_id: validatedData.data.user_id,
-                }
+                user_id_mfd_product_type_product_id: validatedData.data
             }
         })
         const result = check == null
