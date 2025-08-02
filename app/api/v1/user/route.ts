@@ -33,11 +33,7 @@ export async function GET(request: NextRequest) {
         const user = await prisma.user.findUniqueOrThrow({
             where: { id },
             include: {
-                sign_up_type_name: {
-                    select: {
-                        name: true
-                    }
-                }
+                sign_up_type_relation: true,
             }
         })
         const result = {

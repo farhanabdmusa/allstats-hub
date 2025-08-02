@@ -14,20 +14,21 @@ model sign_up_type {
 }
 
 model user {
-  id                    Int           @id(map: "user_pk") @default(autoincrement())
-  uuid                  String        @unique(map: "user_unique") @db.VarChar
-  email                 String?       @unique(map: "user_unique_email") @db.VarChar
-  new_version           Boolean       @default(true)
-  first_session         DateTime      @default(now()) @db.Timestamptz(6)
-  last_session          DateTime      @default(now()) @db.Timestamptz(6)
-  manufacturer          String?       @db.VarChar
-  device_model          String?       @db.VarChar
-  os                    String?       @db.VarChar
-  os_version            String?       @db.VarChar
-  is_virtual            Boolean       @default(false)
-  last_ip               String?       @db.VarChar
+  id                    Int                 @id(map: "user_pk") @default(autoincrement())
+  uuid                  String              @unique(map: "user_unique") @db.VarChar
+  email                 String?             @unique(map: "user_unique_email") @db.VarChar
+  new_version           Boolean             @default(true)
+  first_session         DateTime            @default(now()) @db.Timestamptz(6)
+  last_session          DateTime            @default(now()) @db.Timestamptz(6)
+  manufacturer          String?             @db.VarChar
+  device_model          String?             @db.VarChar
+  os                    String?             @db.VarChar
+  os_version            String?             @db.VarChar
+  is_virtual            Boolean             @default(false)
+  last_ip               String?             @db.VarChar
   sign_up_type          Int?
-  sign_up_type_relation sign_up_type? @relation("user_sign_up_typeTosign_up_type", fields: [sign_up_type], references: [id], onDelete: Restrict, map: "user_sign_up_type_fk")
+  sign_up_type_relation sign_up_type?       @relation("user_sign_up_typeTosign_up_type", fields: [sign_up_type], references: [id], onDelete: Restrict, map: "user_sign_up_type_fk")
+  user_like_product     user_like_product[]
 }
 
 model product_type {
@@ -56,6 +57,7 @@ model user_like_product {
   product_id            String       @db.VarChar
   timestamp             DateTime     @default(now()) @db.Timestamptz(6)
   product_type_relation product_type @relation("user_like_product_product_typeToproduct_type", fields: [product_type], references: [id], map: "like_product_product_type_fk")
+  user                  user         @relation(fields: [user_id], references: [id], map: "user_like_product_user_fk")
 
   @@unique([user_id, mfd, product_type, product_id], map: "user_like_product_unique")
 }
