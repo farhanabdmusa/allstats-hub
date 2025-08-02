@@ -1,16 +1,11 @@
 import { AUDIENCE, SECRET_KEY } from "@/constants/v1/api";
 import createApiResponse from "@/lib/create_api_response";
 import prisma from "@/lib/prisma";
+import GetLikeSchema from "@/zod/get_like_schema";
+import LikeSchema from "@/zod/like_schema";
 import { jwtVerify } from "jose";
 import type { NextRequest } from "next/server";
 import z from "zod";
-
-const LikeSchema = z.object({
-    user_id: z.int(),
-    product_type: z.int(),
-    mfd: z.string(),
-    product_id: z.string(),
-})
 
 const like = ({
     product_id,
@@ -116,13 +111,7 @@ export async function GET(request: NextRequest) {
     const mfd = searchParams.get("mfd");
     const product_type = Number(searchParams.get("product_type"));
 
-    const schema = z.object({
-        product_id: z.string(),
-        product_type: z.int(),
-        mfd: z.string(),
-    });
-
-    const validatedData = schema.safeParse({
+    const validatedData = GetLikeSchema.safeParse({
         product_id,
         product_type,
         mfd,
