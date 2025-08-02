@@ -62,3 +62,10 @@ model user_like_product {
 
   @@unique([user_id, mfd, product_type, product_id], map: "user_like_product_unique")
 }
+
+model notification {
+  id        Int      @id(map: "notification_pk") @default(autoincrement())
+  title     String   @db.VarChar
+  content   String
+  timestamp DateTime @default(now()) @db.Timestamptz(6)
+}
