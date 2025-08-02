@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { errors, jwtVerify } from "jose";
 import createApiResponse from './lib/create_api_response';
-import { AUDIENCE } from './constants/v1/api';
+import { AUDIENCE, ISSUER } from './constants/v1/api';
 
 const SECRET_KEY = new TextEncoder().encode(process.env.SIGNATURE_SECRET_KEY);
 
@@ -29,7 +29,8 @@ export async function middleware(request: NextRequest) {
             token,
             SECRET_KEY,
             {
-                audience: AUDIENCE
+                audience: AUDIENCE,
+                issuer: ISSUER,
             }
         );
     } catch (err) {

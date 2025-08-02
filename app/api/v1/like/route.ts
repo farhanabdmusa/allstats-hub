@@ -1,5 +1,7 @@
+import { AUDIENCE, SECRET_KEY } from "@/constants/v1/api";
 import createApiResponse from "@/lib/create_api_response";
 import prisma from "@/lib/prisma";
+import { jwtVerify } from "jose";
 import type { NextRequest } from "next/server";
 import z from "zod";
 
@@ -150,9 +152,21 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
     try {
+        const authHeader = request.headers.get('authorization');
+        const token = authHeader?.split(' ')[1];
+        const jwt = await jwtVerify(
+            token!,
+            SECRET_KEY,
+            {
+                audience: AUDIENCE
+            }
+        );
         const formData = await request.json();
 
-        const validatedData = LikeSchema.safeParse(formData);
+        const validatedData = LikeSchema.safeParse({
+            ...formData,
+            user_id: Number(jwt.payload.sub)
+        });
         if (!validatedData.success) {
             const errors = z.treeifyError(validatedData.error);
             return createApiResponse({
