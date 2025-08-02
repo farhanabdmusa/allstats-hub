@@ -17,13 +17,14 @@ export async function PUT(request: NextRequest) {
             SECRET_KEY,
             { audience: AUDIENCE }
         );
+        const userId = Number(jwt.payload.sub!);
 
         const check = await prisma.user.findUnique({
             select: {
                 id: true
             },
             where: {
-                id: Number(jwt.payload.sub!)
+                id: userId
             }
         })
         if (!check) {
@@ -38,7 +39,7 @@ export async function PUT(request: NextRequest) {
 
         const validatedData = UserSchema.safeParse({
             ...formData,
-            user_id: check.id
+            user_id: userId
         })
         if (!validatedData.success) {
             const errors = z.treeifyError(validatedData.error);
@@ -51,7 +52,7 @@ export async function PUT(request: NextRequest) {
 
         const user = await prisma.user.update({
             where: {
-                id: check.id
+                id: userId
             },
             data: { ...validatedData.data, last_ip }
         })
