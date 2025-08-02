@@ -3,6 +3,7 @@ import createApiResponse from "@/lib/create_api_response";
 import { getCurrentDateTime } from "@/lib/jakarta_datetime";
 import prisma from "@/lib/prisma";
 import { CreateUserPayload } from "@/types/user";
+import UserSchema from "@/zod/user_schema";
 import { ipAddress } from "@vercel/functions";
 import { SignJWT } from "jose";
 import type { NextRequest } from "next/server";
@@ -26,16 +27,6 @@ const createToken = async (aud: string) => {
 }
 
 export async function POST(request: NextRequest) {
-    const UserSchema = z.object({
-        uuid: z.string("UUID is required"),
-        email: z.email().optional(),
-        manufacturer: z.string().optional(),
-        device_model: z.string().optional(),
-        os: z.string().optional(),
-        os_version: z.string().optional(),
-        is_virtual: z.boolean().optional(),
-        last_ip: z.ipv4().optional(),
-    });
     try {
         const authHeader = request.headers.get("Authorization");
         const authToken = authHeader?.split(' ')[1];
