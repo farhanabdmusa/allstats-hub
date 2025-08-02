@@ -27,6 +27,7 @@ model user {
   is_virtual            Boolean             @default(false)
   last_ip               String?             @db.VarChar
   sign_up_type          Int?
+  token                 String?             @unique(map: "user_unique_1") @db.VarChar
   sign_up_type_relation sign_up_type?       @relation("user_sign_up_typeTosign_up_type", fields: [sign_up_type], references: [id], onDelete: Restrict, map: "user_sign_up_type_fk")
   user_like_product     user_like_product[]
 }
