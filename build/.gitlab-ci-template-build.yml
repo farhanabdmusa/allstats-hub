@@ -37,13 +37,14 @@
     - buildah login -u "$CI_REGISTRY_USER" --password "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
   script:
     - echo "Building $IMAGE_TAG"
-    - |
-      if buildah manifest inspect ${CI_REGISTRY_IMAGE}/cache >/dev/null 2>&1; then
-        echo "✅ Cache image found. Using cache from ${CI_REGISTRY_IMAGE}/cache"
-        CACHE_FROM_OPTION="--cache-from ${CI_REGISTRY_IMAGE}/cache"
-      else
-        echo "⚠️ No cache image found. Building without cache."
-      fi
-    - buildah bud ${CACHE_FROM_OPTION} --tag ${IMAGE_TAG} --cache-to ${CI_REGISTRY_IMAGE}/cache --layers --pull=newer
+#    - |
+#      if buildah manifest inspect ${CI_REGISTRY_IMAGE}/cache >/dev/null 2>&1; then
+#        echo "✅ Cache image found. Using cache from ${CI_REGISTRY_IMAGE}/cache"
+#        CACHE_FROM_OPTION="--cache-from ${CI_REGISTRY_IMAGE}/cache"
+#      else
+#        echo "⚠️ No cache image found. Building without cache."
+#      fi
+#    - buildah bud ${CACHE_FROM_OPTION} --tag ${IMAGE_TAG} --cache-to ${CI_REGISTRY_IMAGE}/cache --layers --pull=newer
+    - buildah bud --tag ${IMAGE_TAG} --pull=newer
     - echo "Pushing $IMAGE_TAG"
     - buildah push ${IMAGE_TAG}
