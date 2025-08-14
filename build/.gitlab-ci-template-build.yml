@@ -45,3 +45,19 @@
     - buildah bud --tag ${IMAGE_TAG} ${CACHE_FLAGS} --pull=newer
     - echo "Pushing $IMAGE_TAG"
     - buildah push ${IMAGE_TAG}
+
+
+.build-docker-image:
+  rules:
+    - !reference [.valid-branch, rules]
+  image: registry.bps.go.id/mirror/docker
+  dependencies:
+    - get-version
+  before_script:
+    - echo "Logging into Gitlab Container Registry"
+    - docker login --username "$CI_REGISTRY_USER" --password "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
+  script:
+    - echo "Building $IMAGE_TAG"
+    - docker build -t $IMAGE_TAG .
+    - echo "Pushing $IMAGE_TAG"
+    - docker push ${IMAGE_TAG}
