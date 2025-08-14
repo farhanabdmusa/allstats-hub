@@ -1,0 +1,34 @@
+include:
+  - project: template/koderia-template
+    file: /build/.gitlab-ci-template-build.yml
+  - project: template/koderia-template
+    file: /deploy/.gitlab-ci-template-deploy.yml
+  - project: template/koderia-template
+    file: /test/.gitlab-ci-template-security.yml
+
+stages:
+  - prep
+  - test
+  - build
+  - scan
+  - release
+  - deploy
+
+get-version:
+  stage: prep
+  extends: .get-version-txt
+
+build-image:
+  stage: build
+  extends: .build-buildah-image
+
+apply-kustomize:
+  stage: deploy
+  extends: .deploy-k8s
+  only:
+    - main
+    - development
+
+release:
+  stage: release
+  extends: .release-job
