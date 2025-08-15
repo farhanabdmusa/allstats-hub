@@ -20,7 +20,7 @@ get-version:
 
 build-image:
   stage: build
-  extends: .build-buildah-image
+  extends: .build-docker-image
 
 apply-kustomize:
   stage: deploy
