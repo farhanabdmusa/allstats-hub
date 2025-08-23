@@ -1,8 +1,7 @@
 include:
-  - template: Jobs/Secret-Detection.gitlab-ci.yml
-
+  - template: Security/Secret-Detection.gitlab-ci.yml
 stages:
-  - test
+  - secret-detection
   - dummy
 
 secret_detection:
