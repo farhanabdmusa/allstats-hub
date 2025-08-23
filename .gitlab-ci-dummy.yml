@@ -5,8 +5,8 @@ stages:
   - dummy
 
 secret_detection:
-  rules:
-    - when: always
+  #rules:
+  #  - when: always
   allow_failure: false
 
 dummy:
