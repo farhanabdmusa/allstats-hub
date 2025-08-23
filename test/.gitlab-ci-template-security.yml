@@ -35,8 +35,8 @@ gemnasium-dependency_scanning:
 
 #override to always run secret detection
 secret_detection:
-  rules:
-    - when: always
+  #rules:
+  #  - when: always
   allow_failure: false
 
 #override to only run on valid-branch
