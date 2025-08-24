@@ -8,6 +8,7 @@ secret_detection:
   #rules:
   #  - when: always
   allow_failure: false
+  stage: secret-detection
 
 dummy:
   stage: dummy
