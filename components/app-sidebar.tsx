@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import {
+  IconBell,
   IconCamera,
   IconChartBar,
   IconDashboard,
@@ -11,7 +12,6 @@ import {
   IconFileWord,
   IconFolder,
   IconHelp,
-  IconListDetails,
   IconReport,
   IconSearch,
   IconSettings,
@@ -43,13 +43,13 @@ const data = {
   navMain: [
     {
       title: "Dashboard",
-      url: "#",
+      url: "/dashboard",
       icon: IconDashboard,
     },
     {
-      title: "Lifecycle",
-      url: "#",
-      icon: IconListDetails,
+      title: "Notifications",
+      url: "/dashboard/notifications",
+      icon: IconBell,
     },
     {
       title: "Analytics",
