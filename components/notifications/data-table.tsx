@@ -8,7 +8,6 @@ import {
   IconChevronsLeft,
   IconChevronsRight,
   IconLoader2,
-  IconPlus,
 } from "@tabler/icons-react";
 import {
   ColumnDef,
@@ -35,7 +34,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { countNotifications, getNotifications } from "@/data/notifications";
 import {
   Dialog,
@@ -171,13 +170,7 @@ export function DataTable() {
   });
 
   return (
-    <div className="px-4 lg:px-6 flex flex-col justify-start gap-2">
-      <div className="ml-0 mr-auto">
-        <Button variant="outline" size="sm">
-          <IconPlus />
-          <span className="hidden lg:inline">Add Notification</span>
-        </Button>
-      </div>
+    <Fragment>
       <div className="overflow-hidden rounded-lg border">
         <Table>
           <TableHeader className="bg-muted sticky top-0 z-10">
@@ -363,6 +356,6 @@ export function DataTable() {
           </div>
         </div>
       </div>
-    </div>
+    </Fragment>
   );
 }

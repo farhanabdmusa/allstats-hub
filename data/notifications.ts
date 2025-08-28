@@ -16,3 +16,15 @@ export async function getNotifications(pageSize: number, page: number, sort: Sor
     });
     return notifications;
 }
+
+export async function createNotification(data: { title: string; content: string }) {
+    try {
+        return await prisma.notification.create({
+            select: { title: true },
+            data,
+        });
+    } catch (error) {
+        console.log("🚀 ~ createNotification ~ error:", error)
+        throw new Error("Failed to create notification");
+    }
+}
