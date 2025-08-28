@@ -123,4 +123,8 @@
   ul {
     @apply list-disc pl-5;
   }
+
+  button {
+    @apply hover:cursor-pointer;
+  }
 }
