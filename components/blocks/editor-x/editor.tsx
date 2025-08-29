@@ -24,7 +24,7 @@ export const editorConfig: InitialConfigType = {
   },
 };
 
-export function Editor({
+export default function Editor({
   editorState,
   editorSerializedState,
   onChange,

@@ -3,7 +3,6 @@ import { nodes } from '@/components/blocks/editor-x/nodes';
 import { editorConfig } from '@/components/blocks/editor-x/editor';
 import { $generateHtmlFromNodes } from '@lexical/html';
 
-
 /**
  * Converts Lexical JSON to HTML using Lexical's built-in utilities
  * @param lexicalJson - The Lexical JSON object (serialized editor state)

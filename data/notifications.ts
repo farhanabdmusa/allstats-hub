@@ -28,3 +28,25 @@ export async function createNotification(data: { title: string; content: string 
         throw new Error("Failed to create notification");
     }
 }
+
+export async function getNotification(id: number) {
+    return prisma.notification.findUnique({
+        select: {
+            title: true,
+            content: true,
+        },
+        where: { id },
+    });
+}
+
+export async function updateNotification(id: number, data: { title: string; content: string }) {
+    try {
+        return await prisma.notification.update({
+            where: { id },
+            data,
+        });
+    } catch (error) {
+        console.log("🚀 ~ updateNotification ~ error:", error);
+        throw new Error("Failed to update notification");
+    }
+}
