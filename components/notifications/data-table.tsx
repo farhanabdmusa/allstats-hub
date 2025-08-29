@@ -108,7 +108,9 @@ export function DataTable() {
   const [loading, setLoading] = useState(true);
   const [total, setTotal] = useState(0);
   const [data, setData] = useState<NotificationsType[]>([]);
-  const [sorting, setSorting] = useState<SortingState>([]);
+  const [sorting, setSorting] = useState<SortingState>([
+    { id: "timestamp", desc: true },
+  ]);
   const [columnWidth, setColumnWidth] = useState<number[]>();
   const [pagination, setPagination] = useState({
     pageIndex: 0,
