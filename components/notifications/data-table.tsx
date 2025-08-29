@@ -82,7 +82,9 @@ const columns: ColumnDef<NotificationsType>[] = [
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{row.original.title}</DialogTitle>
+            <hr />
             <DialogDescription
+              className="text-gray-800"
               dangerouslySetInnerHTML={{ __html: row.original.content }}
             />
           </DialogHeader>
