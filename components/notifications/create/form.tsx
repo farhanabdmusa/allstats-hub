@@ -20,6 +20,7 @@ import { createNotification } from "@/data/notifications";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { IconLoader2 } from "@tabler/icons-react";
+import { lexicalToHtml } from "@/lib/lexical_to_json";
 
 const formSchema = z.object({
   title: z.string().min(2).max(50),
@@ -87,7 +88,7 @@ const CreateNotificationForm = () => {
                   editorSerializedState={editorState}
                   onSerializedChange={(value) => setEditorState(value)}
                   onChange={(value) =>
-                    form.setValue("content", JSON.stringify(value.toJSON()))
+                    form.setValue("content", lexicalToHtml(value.toJSON()))
                   }
                 />
               </FormControl>
