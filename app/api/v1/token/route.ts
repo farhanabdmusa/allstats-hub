@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
 
             await tx.user.update({
                 data: {
-                    token: token
+                    fcm_token: token
                 },
                 where: {
                     id: userId.id
