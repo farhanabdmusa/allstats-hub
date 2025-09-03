@@ -68,6 +68,8 @@ model notification {
   title              String               @db.VarChar
   content            String
   timestamp          DateTime             @default(now()) @db.Timestamptz(6)
+  push_notification  Boolean              @default(false)
+  notification_sent  DateTime?            @db.Timestamptz(6)
   notification_topic notification_topic[]
 }
 
