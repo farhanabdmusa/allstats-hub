@@ -64,8 +64,26 @@ model user_like_product {
 }
 
 model notification {
-  id        Int      @id(map: "notification_pk") @default(autoincrement())
-  title     String   @db.VarChar
-  content   String
-  timestamp DateTime @default(now()) @db.Timestamptz(6)
+  id                 Int                  @id(map: "notification_pk") @default(autoincrement())
+  title              String               @db.VarChar
+  content            String
+  timestamp          DateTime             @default(now()) @db.Timestamptz(6)
+  notification_topic notification_topic[]
+}
+
+model notification_topic {
+  id              Int          @id(map: "notification_topic_pk") @default(autoincrement())
+  id_notification Int
+  id_topic        Int
+  notification    notification @relation(fields: [id_notification], references: [id], onDelete: Cascade, map: "notification_topic_notification_fk")
+  topic           topic        @relation(fields: [id_topic], references: [id], onDelete: Cascade, map: "notification_topic_topic_fk")
+
+  @@unique([id_notification, id_topic], map: "notification_topic_unique")
+}
+
+model topic {
+  id                 Int                  @id(map: "topic_pk") @default(autoincrement())
+  name               String               @unique(map: "topic_unique") @db.VarChar
+  display_name       String               @db.VarChar
+  notification_topic notification_topic[]
 }
