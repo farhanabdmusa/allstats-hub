@@ -1,6 +1,7 @@
 "use server"
 
 import prisma from "@/lib/prisma";
+import { Notification } from "@/types/notification";
 import { SortingState } from "@tanstack/react-table";
 
 export async function countNotifications() {
@@ -17,14 +18,27 @@ export async function getNotifications(pageSize: number, page: number, sort: Sor
     return notifications;
 }
 
-export async function createNotification(data: { title: string; content: string }) {
+export async function createNotification(
+    data: Omit<Notification, "id" | "timestamp" | "notification_sent" | "topics"> & { topics?: number[] }
+) {
     try {
+        const { topics, push_notification, ...rest } = data;
         return await prisma.notification.create({
             select: { title: true },
-            data,
+            data: {
+                ...rest,
+                push_notification,
+                notification_topic: push_notification && topics && topics.length > 0
+                    ? {
+                        createMany: {
+                            data: topics.map(id_topic => ({ id_topic }))
+                        }
+                    }
+                    : undefined
+            },
         });
     } catch (error) {
-        console.log("🚀 ~ createNotification ~ error:", error)
+        console.error("Failed to create notification:", error);
         throw new Error("Failed to create notification");
     }
 }
@@ -39,11 +53,14 @@ export async function getNotification(id: number) {
     });
 }
 
-export async function updateNotification(id: number, data: { title: string; content: string }) {
+export async function updateNotification(id: number, data: Omit<Notification, "id" | "timestamp" | "notification_sent" | "topics"> & { topics?: number[] }) {
     try {
         return await prisma.notification.update({
             where: { id },
-            data,
+            data: {
+                ...data,
+
+            },
         });
     } catch (error) {
         console.log("🚀 ~ updateNotification ~ error:", error);

@@ -24,6 +24,10 @@ import { htmlToLexical } from "@/lib/html_to_lexical";
 import dynamic from "next/dynamic";
 import { Skeleton } from "@/components/ui/skeleton";
 import Link from "next/link";
+import { Topic } from "@/types/topic";
+import { Notification } from "@/types/notification";
+import TopicSelect from "./form/topic";
+import { Switch } from "@/components/ui/switch";
 
 const Editor = dynamic(() => import("@/components/blocks/editor-x/editor"), {
   ssr: false,
@@ -33,16 +37,16 @@ const Editor = dynamic(() => import("@/components/blocks/editor-x/editor"), {
 const formSchema = z.object({
   title: z.string().min(2).max(50),
   content: z.string(),
+  topics: z.array(z.number()).optional(),
+  push_notification: z.boolean(),
 });
 
 const NotificationForm = ({
   data,
+  topics,
 }: Readonly<{
-  data?: {
-    id: number;
-    title: string;
-    content: string;
-  };
+  topics: Topic[];
+  data?: Notification;
 }>) => {
   const router = useRouter();
   const [editorState, setEditorState] = useState<
@@ -54,15 +58,17 @@ const NotificationForm = ({
     defaultValues: {
       title: data?.title ?? "",
       content: data?.content ?? "",
+      topics: data?.topics?.map((topic) => topic.id) ?? undefined,
+      push_notification: data?.push_notification ?? false,
     },
   });
 
   const update = async (
     id: number,
-    data: {
-      title: string;
-      content: string;
-    }
+    data: Omit<
+      Notification,
+      "id" | "timestamp" | "notification_sent" | "topics"
+    > & { topics?: number[] | undefined }
   ) => {
     const toastID = toast.loading("Updating notification...", {
       position: "top-center",
@@ -84,7 +90,14 @@ const NotificationForm = ({
     }
   };
 
-  const create = async (data: { title: string; content: string }) => {
+  const create = async (
+    data: Omit<
+      Notification,
+      "id" | "timestamp" | "notification_sent" | "topics"
+    > & {
+      topics?: number[];
+    }
+  ) => {
     // Send the form data to your API or perform any other async action.
     const toastID = toast.loading("Creating notification...", {
       position: "top-center",
@@ -149,6 +162,51 @@ const NotificationForm = ({
             </FormItem>
           )}
         />
+        <FormField
+          control={form.control}
+          name="push_notification"
+          render={() => (
+            <FormItem className="flex flex-row items-center space-x-2 space-y-0">
+              <FormControl>
+                <Switch
+                  checked={form.watch("push_notification")}
+                  onCheckedChange={(value) =>
+                    form.setValue("push_notification", value)
+                  }
+                />
+              </FormControl>
+              <FormLabel>Push Notification</FormLabel>
+            </FormItem>
+          )}
+        />
+        {form.watch("push_notification") && (
+          <FormField
+            control={form.control}
+            name="topics"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>User&apos;s Topic</FormLabel>
+                <FormControl>
+                  <TopicSelect
+                    topics={topics}
+                    values={
+                      field.value
+                        ? topics.filter((topic) =>
+                            field.value?.includes(topic.id)
+                          )
+                        : []
+                    }
+                    onChange={(value) => {
+                      const selected = value.map((v) => v.id);
+                      form.setValue("topics", selected);
+                    }}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
         <div className="inline-flex gap-2">
           <Button
             type="submit"

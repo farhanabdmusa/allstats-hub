@@ -128,3 +128,14 @@
     @apply hover:cursor-pointer;
   }
 }
+
+@layer utilities {
+  .popover-content-width-full {
+    width: var(--radix-popover-trigger-width);
+    max-height: var(--radix-popover-content-available-height);
+  }
+  .dropdown-menu-content-widht-full {
+    width: var(--radix-popper-anchor-width);
+    max-height: var(--radix-popper-available-width);
+  }
+}
