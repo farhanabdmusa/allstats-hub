@@ -29,6 +29,11 @@ export const LIST_MENU = {
             icon: IconDashboard,
         },
         {
+            title: "Users",
+            url: "/dashboard/user",
+            icon: IconUsers,
+        },
+        {
             title: "Notifications",
             url: "/dashboard/notifications",
             icon: IconBell,
