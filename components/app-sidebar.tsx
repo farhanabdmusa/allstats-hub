@@ -5,6 +5,7 @@ import {
   IconBell,
   IconCamera,
   IconChartBar,
+  IconCube,
   IconDashboard,
   IconDatabase,
   IconFileAi,
@@ -50,6 +51,11 @@ const data = {
       title: "Notifications",
       url: "/dashboard/notifications",
       icon: IconBell,
+    },
+    {
+      title: "Topic",
+      url: "/dashboard/topic",
+      icon: IconCube,
     },
     {
       title: "Analytics",
