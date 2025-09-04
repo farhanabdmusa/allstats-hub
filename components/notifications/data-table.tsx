@@ -105,9 +105,14 @@ const columns: ColumnDef<Notification>[] = [
   {
     accessorKey: "push_notification",
     header: "Push Notification",
-
     cell: ({ row }) => (
-      <span>{row.original.push_notification ? "Yes" : "No"}</span>
+      <div className="flex justify-center items-center">
+        {row.original.push_notification ? (
+          <Badge variant="positive">Yes</Badge>
+        ) : (
+          <Badge variant="destructive">No</Badge>
+        )}
+      </div>
     ),
   },
   {
@@ -119,13 +124,18 @@ const columns: ColumnDef<Notification>[] = [
         if (topics && topics.length > 0) {
           return (
             <HoverCard>
-              <HoverCardTrigger asChild>
-                <Button type="button" size="sm">
-                  {topics.length > 1
-                    ? `${topics.length} Topics`
-                    : `${topics.length} Topic`}
-                </Button>
-              </HoverCardTrigger>
+              <div className="flex justify-center items-center">
+                <HoverCardTrigger asChild>
+                  <Badge
+                    variant={"default"}
+                    className="hover:cursor-pointer select-none"
+                  >
+                    {topics.length > 1
+                      ? `${topics.length} Topics`
+                      : `${topics.length} Topic`}
+                  </Badge>
+                </HoverCardTrigger>
+              </div>
               <HoverCardContent className="flex flex-wrap gap-1">
                 {topics.map((item) => (
                   <Badge key={item.topic.id}>{item.topic.display_name}</Badge>
@@ -134,7 +144,11 @@ const columns: ColumnDef<Notification>[] = [
             </HoverCard>
           );
         } else {
-          return "All Users";
+          return (
+            <div className="flex justify-center items-center">
+              <Badge variant="general">All Users</Badge>
+            </div>
+          );
         }
       }
       return null;
