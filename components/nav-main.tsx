@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/sidebar";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { cn } from "@/lib/utils";
 
 export function NavMain({
   items,
@@ -28,14 +29,15 @@ export function NavMain({
       <SidebarGroupContent className="flex flex-col gap-2">
         <SidebarMenu>
           {items.map((item) => (
-            <SidebarMenuItem
-              key={item.title}
-              className={
-                pathname.startsWith(item.url) ? "bg-sky-700/5 rounded-md" : ""
-              }
-            >
+            <SidebarMenuItem key={item.title}>
               <SidebarMenuButton tooltip={item.title} asChild>
-                <Link href={item.url}>
+                <Link
+                  href={item.url}
+                  className={cn("transition-colors bg-transparent rounded-md", {
+                    "bg-sky-700/25 hover:bg-sky-700/45 hover:text-sky-900":
+                      pathname.startsWith(item.url),
+                  })}
+                >
                   {item.icon && <item.icon />}
                   <span>{item.title}</span>
                 </Link>
