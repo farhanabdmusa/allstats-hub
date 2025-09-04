@@ -166,6 +166,19 @@ const columns: ColumnDef<Notification>[] = [
     enableSorting: true,
   },
   {
+    accessorKey: "notification_sent",
+    header: "Last Notification Sent",
+    cell: ({ row }) => {
+      const notification_sent = row.original.notification_sent;
+      if (!notification_sent) return null;
+      notification_sent.toLocaleString("en-US", {
+        dateStyle: "long",
+        timeStyle: "medium",
+      });
+    },
+    enableSorting: true,
+  },
+  {
     id: "actions",
     cell: ({ row }) => (
       <DropdownMenu>
