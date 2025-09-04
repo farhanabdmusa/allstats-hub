@@ -30,7 +30,9 @@ export function NavMain({
           {items.map((item) => (
             <SidebarMenuItem
               key={item.title}
-              className={pathname === item.url ? "bg-sky-700/5 rounded-md" : ""}
+              className={
+                pathname.startsWith(item.url) ? "bg-sky-700/5 rounded-md" : ""
+              }
             >
               <SidebarMenuButton tooltip={item.title} asChild>
                 <Link href={item.url}>
