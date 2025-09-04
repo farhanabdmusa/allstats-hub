@@ -46,7 +46,7 @@ const NotificationForm = ({
   topics,
 }: Readonly<{
   topics: Topic[];
-  data?: Notification;
+  data?: Omit<Notification, "timestamp" | "notification_sent">;
 }>) => {
   const router = useRouter();
   const [editorState, setEditorState] = useState<
@@ -58,7 +58,8 @@ const NotificationForm = ({
     defaultValues: {
       title: data?.title ?? "",
       content: data?.content ?? "",
-      topics: data?.topics?.map((topic) => topic.id) ?? undefined,
+      topics:
+        data?.notification_topic?.map((topic) => topic.topic.id) ?? undefined,
       push_notification: data?.push_notification ?? false,
     },
   });
@@ -189,15 +190,9 @@ const NotificationForm = ({
                 <FormControl>
                   <TopicSelect
                     topics={topics}
-                    values={
-                      field.value
-                        ? topics.filter((topic) =>
-                            field.value?.includes(topic.id)
-                          )
-                        : []
-                    }
+                    values={field.value}
                     onChange={(value) => {
-                      const selected = value.map((v) => v.id);
+                      const selected = value.map((v) => v);
                       form.setValue("topics", selected);
                     }}
                   />

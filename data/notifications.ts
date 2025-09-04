@@ -48,6 +48,12 @@ export async function getNotification(id: number) {
         select: {
             title: true,
             content: true,
+            push_notification: true,
+            notification_topic: {
+                select: {
+                    topic: true,
+                }
+            }
         },
         where: { id },
     });
@@ -55,11 +61,21 @@ export async function getNotification(id: number) {
 
 export async function updateNotification(id: number, data: Omit<Notification, "id" | "timestamp" | "notification_sent" | "topics"> & { topics?: number[] }) {
     try {
+        const { topics, push_notification, ...rest } = data;
         return await prisma.notification.update({
             where: { id },
             data: {
-                ...data,
-
+                ...rest,
+                notification_topic: push_notification && topics && topics.length > 0
+                    ? {
+                        deleteMany: {
+                            id_notification: id,
+                        },
+                        createMany: {
+                            data: topics.map(id_topic => ({ id_topic }))
+                        }
+                    }
+                    : undefined
             },
         });
     } catch (error) {

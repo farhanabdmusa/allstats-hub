@@ -28,19 +28,19 @@ const TopicSelect = ({
   values = [],
 }: Readonly<{
   topics: Topic[];
-  onChange: (value: Topic[]) => void;
-  values?: Topic[];
+  onChange: (value: number[]) => void;
+  values?: number[];
 }>) => {
   const [open, setOpen] = useState(false);
 
   const updateValue = useCallback(
     (currentValue: string) => {
-      if (values.find((v) => v.id.toString() === currentValue)) {
-        return values.filter((v) => v.id.toString() !== currentValue);
+      if (values.find((v) => v.toString() === currentValue)) {
+        return values.filter((v) => v.toString() !== currentValue);
       }
       const topic = topics.find((t) => t.id.toString() === currentValue);
       if (topic) {
-        return [...values, topic];
+        return [...values, topic.id];
       }
     },
     [topics, values]
@@ -56,22 +56,28 @@ const TopicSelect = ({
         >
           <div className="flex-grow flex flex-wrap gap-1">
             {values.length > 0
-              ? values.map((v) => (
-                  <Badge key={v.id}>
-                    {v.display_name}
-                    <span
-                      className="ml-1 hover:cursor-pointer"
-                      role="button"
-                      aria-label={`Remove ${v.display_name}`}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onChange(values.filter((val) => val.id !== v.id));
-                      }}
-                    >
-                      <IconX />
-                    </span>
-                  </Badge>
-                ))
+              ? values.map((v) => {
+                  const item = topics.find((topic) => topic.id === v);
+                  if (!item) {
+                    return null;
+                  }
+                  return (
+                    <Badge key={v}>
+                      {item.display_name}
+                      <span
+                        className="ml-1 hover:cursor-pointer"
+                        role="button"
+                        aria-label={`Remove ${item.display_name}`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onChange(values.filter((val) => val !== v));
+                        }}
+                      >
+                        <IconX />
+                      </span>
+                    </Badge>
+                  );
+                })
               : "All users"}
           </div>
           <ChevronsUpDown className="opacity-50" />
@@ -96,7 +102,7 @@ const TopicSelect = ({
                   <Check
                     className={cn(
                       "ml-auto",
-                      values.find((v) => v.id === topic.id)
+                      values.find((v) => v === topic.id)
                         ? "opacity-100"
                         : "opacity-0"
                     )}

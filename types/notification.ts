@@ -4,7 +4,7 @@ export interface Notification {
     id: number;
     title: string;
     content: string;
-    topics?: Topic[];
+    notification_topic?: { topic: Topic }[];
     push_notification: boolean;
     timestamp: Date;
     notification_sent?: Date;
