@@ -78,6 +78,7 @@ export async function updateNotification(id: number, data: Omit<Notification, "i
             where: { id },
             data: {
                 ...rest,
+                push_notification: push_notification,
                 notification_topic: push_notification && topics && topics.length > 0
                     ? {
                         deleteMany: {
