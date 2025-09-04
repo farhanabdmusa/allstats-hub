@@ -54,15 +54,15 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import Link from "next/link";
+import { Notification } from "@/types/notification";
+import { Badge } from "@/components/ui/badge";
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card";
 
-interface NotificationsType {
-  id: number;
-  title: string;
-  content: string;
-  timestamp: Date;
-}
-
-const columns: ColumnDef<NotificationsType>[] = [
+const columns: ColumnDef<Notification>[] = [
   {
     id: "no",
     header: "No.",
@@ -100,6 +100,45 @@ const columns: ColumnDef<NotificationsType>[] = [
         </DialogContent>
       </Dialog>
     ),
+    enableSorting: false,
+  },
+  {
+    accessorKey: "push_notification",
+    header: "Push Notification",
+
+    cell: ({ row }) => (
+      <span>{row.original.push_notification ? "Yes" : "No"}</span>
+    ),
+  },
+  {
+    accessorKey: "topics",
+    header: "Topics",
+    cell: ({ row }) => {
+      if (row.original.push_notification) {
+        const topics = row.original.notification_topic;
+        if (topics && topics.length > 0) {
+          return (
+            <HoverCard>
+              <HoverCardTrigger asChild>
+                <Button type="button" size="sm">
+                  {topics.length > 1
+                    ? `${topics.length} Topics`
+                    : `${topics.length} Topic`}
+                </Button>
+              </HoverCardTrigger>
+              <HoverCardContent className="flex flex-wrap gap-1">
+                {topics.map((item) => (
+                  <Badge key={item.topic.id}>{item.topic.display_name}</Badge>
+                ))}
+              </HoverCardContent>
+            </HoverCard>
+          );
+        } else {
+          return "All Users";
+        }
+      }
+      return null;
+    },
     enableSorting: false,
   },
   {
@@ -145,7 +184,7 @@ export function DataTable() {
   const [mounted, setMounted] = useState(false);
   const [loading, setLoading] = useState(true);
   const [total, setTotal] = useState(0);
-  const [data, setData] = useState<NotificationsType[]>([]);
+  const [data, setData] = useState<Notification[]>([]);
   const [sorting, setSorting] = useState<SortingState>([
     { id: "timestamp", desc: true },
   ]);

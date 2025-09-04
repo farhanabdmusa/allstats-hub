@@ -8,9 +8,21 @@ export async function countNotifications() {
     return prisma.notification.count();
 }
 
-export async function getNotifications(pageSize: number, page: number, sort: SortingState) {
+export async function getNotifications(pageSize: number, page: number, sort: SortingState): Promise<Notification[]> {
     const flatSort = sort.map((s) => ({ [s.id]: s.desc ? "desc" : "asc" }));
     const notifications = await prisma.notification.findMany({
+        select: {
+            id: true,
+            title: true,
+            content: true,
+            push_notification: true,
+            timestamp: true,
+            notification_topic: {
+                select: {
+                    topic: true
+                }
+            }
+        },
         orderBy: flatSort,
         take: pageSize,
         skip: page * pageSize,
