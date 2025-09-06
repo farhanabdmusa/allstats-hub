@@ -28,6 +28,7 @@ model user {
   last_ip               String?             @db.VarChar
   sign_up_type          Int?
   fcm_token             String?             @unique(map: "user_unique_1") @db.VarChar
+  access_token          String?             @unique(map: "user_access_token") @db.VarChar
   sign_up_type_relation sign_up_type?       @relation("user_sign_up_typeTosign_up_type", fields: [sign_up_type], references: [id], onDelete: Restrict, map: "user_sign_up_type_fk")
   user_like_product     user_like_product[]
 }

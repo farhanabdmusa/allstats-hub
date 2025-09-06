@@ -56,13 +56,13 @@ export async function POST(request: NextRequest) {
 
         const token = await prisma.$transaction(async (tx) => {
             const userId = await tx.user.upsert({
-                create: formData,
+                create: validatedData.data,
                 update: {
-                    ...formData,
+                    ...validatedData.data,
                     last_session: getCurrentDateTime()!
                 },
                 where: {
-                    uuid: formData.uuid
+                    uuid: validatedData.data.uuid
                 },
                 select: {
                     id: true,
@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
 
             await tx.user.update({
                 data: {
-                    fcm_token: token
+                    access_token: token
                 },
                 where: {
                     id: userId.id
