@@ -6,7 +6,7 @@ import { convertDate2String } from "@/lib/jakarta_datetime";
 import z from "zod";
 import { jwtVerify } from "jose";
 import { AUDIENCE, SECRET_KEY } from "@/constants/v1/api";
-import UserSchema from "@/zod/user_schema";
+import { UpdateUserPayload } from "@/zod/user_schema";
 
 export async function PUT(request: NextRequest) {
     try {
@@ -37,7 +37,7 @@ export async function PUT(request: NextRequest) {
 
         const formData = await request.json();
 
-        const validatedData = UserSchema.safeParse({
+        const validatedData = UpdateUserPayload.safeParse({
             ...formData,
             user_id: userId
         })
@@ -48,13 +48,23 @@ export async function PUT(request: NextRequest) {
                 zodError: errors,
             })
         }
+
+        const cleanedData = Object.fromEntries(
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            Object.entries(validatedData.data).filter(([_, v]) => v !== null)
+        );
+        console.log("🚀 ~ PUT ~ cleanedData:", cleanedData)
         const last_ip = ipAddress(request);
 
         const user = await prisma.user.update({
+            omit: {
+                id: true,
+                access_token: true,
+            },
             where: {
                 id: userId
             },
-            data: { ...validatedData.data, last_ip }
+            data: { ...cleanedData, last_ip }
         })
 
         return createApiResponse({
