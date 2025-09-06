@@ -2,7 +2,7 @@ import z from "zod";
 
 const UserSchema = z.object({
     uuid: z.string("UUID is required"),
-    email: z.email().optional(),
+    email: z.email().optional().nullable(),
     manufacturer: z.string().optional(),
     device_model: z.string().optional(),
     os: z.string().optional(),
