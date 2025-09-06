@@ -66,8 +66,16 @@ export async function POST(request: NextRequest) {
                 },
                 select: {
                     id: true,
-                }
+                },
             })
+
+            await tx.user_preference.create({
+                data: {
+                    id_user: userId.id,
+                    lang: validatedData.data.lang || "id",
+                    domain: validatedData.data.domain || "0000",
+                },
+            });
 
             const token = await createToken(userId.id.toString());
 

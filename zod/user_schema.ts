@@ -1,4 +1,3 @@
-import { sign } from "crypto";
 import z from "zod";
 
 const UserSchema = z.object({
@@ -10,6 +9,8 @@ const UserSchema = z.object({
     os_version: z.string().optional(),
     is_virtual: z.boolean().optional(),
     last_ip: z.ipv4().optional().nullable(),
+    lang: z.enum(["id", "en"]).optional().nullable(),
+    domain: z.string().length(4).optional().nullable(),
 });
 
 const UpdateUserPayload = UserSchema.extend({
