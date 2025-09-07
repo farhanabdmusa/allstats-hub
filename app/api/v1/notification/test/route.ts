@@ -1,13 +1,24 @@
 import createApiResponse from "@/lib/create_api_response";
 import { fcm } from "@/lib/firebase_admin";
-import { TokenMessage } from "firebase-admin/messaging"
+import prisma from "@/lib/prisma";
+import { MulticastMessage } from "firebase-admin/messaging"
 
 export async function GET() {
   try {
-    const token = "fFq3dNYRSlmXpasmBrQnrM:APA91bFK_uDe7P0hT1ObBkngCnP0yufskC9CbjG4MnGGvkMvj00IdlWVUnA4WcQLPJjO6ePQCzbXvi6NAiGbV4tAj2_FSO6CYDFSO4uZ_6ZHltxVU3f6YwY";
+    const listTokens = await prisma.user.findMany({
+      select: {
+        fcm_token: true
+      },
+      where: {
+        fcm_token: {
+          not: null
+        }
+      }
+    })
+    console.log("🚀 ~ GET ~ listTokens:", listTokens.map(user => user.fcm_token))
 
-    const message: TokenMessage = {
-      token: token,
+    const message: MulticastMessage = {
+      tokens: listTokens.map(user => user.fcm_token) as string[],
       notification: {
         title: "📢📢📢 Update Aplikasi Tersedia!",
         body: "Versi 2.0.1 telah hadir dengan fitur baru dan peningkatan performa. Segera perbarui aplikasi Anda untuk pengalaman terbaik.",
@@ -27,8 +38,9 @@ export async function GET() {
       //   },
       // },
     };
+    const response = await fcm.sendEachForMulticast(message);
+    console.log("🚀 ~ GET ~ response:", response)
 
-    const response = await fcm.send(message);
     return createApiResponse({
       status: true,
       data: response,
