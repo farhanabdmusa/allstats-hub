@@ -1,20 +1,21 @@
-import * as React from "react"
-import { JSX, useEffect, useRef } from "react"
-import katex from "katex"
+/* eslint-disable @next/next/no-img-element */
+import * as React from "react";
+import { JSX, useEffect, useRef } from "react";
+import katex from "katex";
 
 export default function KatexRenderer({
   equation,
   inline,
   onDoubleClick,
 }: Readonly<{
-  equation: string
-  inline: boolean
-  onDoubleClick: () => void
+  equation: string;
+  inline: boolean;
+  onDoubleClick: () => void;
 }>): JSX.Element {
-  const katexElementRef = useRef(null)
+  const katexElementRef = useRef(null);
 
   useEffect(() => {
-    const katexElement = katexElementRef.current
+    const katexElement = katexElementRef.current;
 
     if (katexElement !== null) {
       katex.render(equation, katexElement, {
@@ -24,9 +25,9 @@ export default function KatexRenderer({
         strict: "warn",
         throwOnError: false,
         trust: false,
-      })
+      });
     }
-  }, [equation, inline])
+  }, [equation, inline]);
 
   return (
     // We use an empty image tag either side to ensure Android doesn't try and compose from the
@@ -42,5 +43,5 @@ export default function KatexRenderer({
       />
       <img src="#" alt="" />
     </>
-  )
+  );
 }

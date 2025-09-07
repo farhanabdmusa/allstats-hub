@@ -1,4 +1,5 @@
-"use client"
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+"use client";
 
 /**
  * Copyright (c) Meta Platforms, Inc. and affiliates.
@@ -7,47 +8,47 @@
  * LICENSE file in the root directory of this source tree.
  *
  */
-import * as React from "react"
-import { JSX, useCallback, useEffect, useMemo, useState } from "react"
-import dynamic from "next/dynamic"
-import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext"
+import * as React from "react";
+import { JSX, useCallback, useEffect, useMemo, useState } from "react";
+import dynamic from "next/dynamic";
+import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 import {
   MenuOption,
   MenuTextMatch,
   useBasicTypeaheadTriggerMatch,
-} from "@lexical/react/LexicalTypeaheadMenuPlugin"
-import { TextNode } from "lexical"
-import { CircleUserRoundIcon } from "lucide-react"
-import { createPortal } from "react-dom"
+} from "@lexical/react/LexicalTypeaheadMenuPlugin";
+import { TextNode } from "lexical";
+import { CircleUserRoundIcon } from "lucide-react";
+import { createPortal } from "react-dom";
 
-import { $createMentionNode } from "@/components/editor/nodes/mention-node"
+import { $createMentionNode } from "@/components/editor/nodes/mention-node";
 import {
   Command,
   CommandGroup,
   CommandItem,
   CommandList,
-} from "@/components/ui/command"
+} from "@/components/ui/command";
 
 const LexicalTypeaheadMenuPlugin = dynamic(
   () => import("./default/lexical-typeahead-menu-plugin"),
   { ssr: false }
-)
+);
 
 const PUNCTUATION =
-  "\\.,\\+\\*\\?\\$\\@\\|#{}\\(\\)\\^\\-\\[\\]\\\\/!%'\"~=<>_:;"
-const NAME = "\\b[A-Z][^\\s" + PUNCTUATION + "]"
+  "\\.,\\+\\*\\?\\$\\@\\|#{}\\(\\)\\^\\-\\[\\]\\\\/!%'\"~=<>_:;";
+const NAME = "\\b[A-Z][^\\s" + PUNCTUATION + "]";
 
 const DocumentMentionsRegex = {
   NAME,
   PUNCTUATION,
-}
+};
 
-const PUNC = DocumentMentionsRegex.PUNCTUATION
+const PUNC = DocumentMentionsRegex.PUNCTUATION;
 
-const TRIGGERS = ["@"].join("")
+const TRIGGERS = ["@"].join("");
 
 // Chars we expect to see in a mention (non-space, non-punctuation).
-const VALID_CHARS = "[^" + TRIGGERS + PUNC + "\\s]"
+const VALID_CHARS = "[^" + TRIGGERS + PUNC + "\\s]";
 
 // Non-standard series of chars. Each series must be preceded and followed by
 // a valid char.
@@ -58,9 +59,9 @@ const VALID_JOINS =
   "[" +
   PUNC +
   "]|" + // E.g. "-' in "Salier-Hellendag"
-  ")"
+  ")";
 
-const LENGTH_LIMIT = 75
+const LENGTH_LIMIT = 75;
 
 const AtSignMentionsRegex = new RegExp(
   "(^|\\s|\\()(" +
@@ -74,10 +75,10 @@ const AtSignMentionsRegex = new RegExp(
     LENGTH_LIMIT +
     "})" +
     ")$"
-)
+);
 
 // 50 is the longest alias length limit.
-const ALIAS_LENGTH_LIMIT = 50
+const ALIAS_LENGTH_LIMIT = 50;
 
 // Regex used to match alias.
 const AtSignMentionsRegexAliasRegex = new RegExp(
@@ -91,12 +92,12 @@ const AtSignMentionsRegexAliasRegex = new RegExp(
     ALIAS_LENGTH_LIMIT +
     "})" +
     ")$"
-)
+);
 
 // At most, 5 suggestions are shown in the popup.
-const SUGGESTION_LIST_LENGTH_LIMIT = 5
+const SUGGESTION_LIST_LENGTH_LIMIT = 5;
 
-const mentionsCache = new Map()
+const mentionsCache = new Map();
 
 const dummyMentionsData = [
   "Aayla Secura",
@@ -502,99 +503,99 @@ const dummyMentionsData = [
   "Zev Senesca",
   "Ziro the Hutt",
   "Zuckuss",
-]
+];
 
 const dummyLookupService = {
   search(string: string, callback: (results: Array<string>) => void): void {
     setTimeout(() => {
       const results = dummyMentionsData.filter((mention) =>
         mention.toLowerCase().includes(string.toLowerCase())
-      )
-      callback(results)
-    }, 500)
+      );
+      callback(results);
+    }, 500);
   },
-}
+};
 
 function useMentionLookupService(mentionString: string | null) {
-  const [results, setResults] = useState<Array<string>>([])
+  const [results, setResults] = useState<Array<string>>([]);
 
   useEffect(() => {
-    const cachedResults = mentionsCache.get(mentionString)
+    const cachedResults = mentionsCache.get(mentionString);
 
     if (mentionString == null) {
-      setResults([])
-      return
+      setResults([]);
+      return;
     }
 
     if (cachedResults === null) {
-      return
+      return;
     } else if (cachedResults !== undefined) {
-      setResults(cachedResults)
-      return
+      setResults(cachedResults);
+      return;
     }
 
-    mentionsCache.set(mentionString, null)
+    mentionsCache.set(mentionString, null);
     dummyLookupService.search(mentionString, (newResults) => {
-      mentionsCache.set(mentionString, newResults)
-      setResults(newResults)
-    })
-  }, [mentionString])
+      mentionsCache.set(mentionString, newResults);
+      setResults(newResults);
+    });
+  }, [mentionString]);
 
-  return results
+  return results;
 }
 
 function checkForAtSignMentions(
   text: string,
   minMatchLength: number
 ): MenuTextMatch | null {
-  let match = AtSignMentionsRegex.exec(text)
+  let match = AtSignMentionsRegex.exec(text);
 
   if (match === null) {
-    match = AtSignMentionsRegexAliasRegex.exec(text)
+    match = AtSignMentionsRegexAliasRegex.exec(text);
   }
   if (match !== null) {
     // The strategy ignores leading whitespace but we need to know it's
     // length to add it to the leadOffset
 
-    const maybeLeadingWhitespace = match[1]
+    const maybeLeadingWhitespace = match[1];
 
-    const matchingString = match[3]
+    const matchingString = match[3];
     if (matchingString.length >= minMatchLength) {
       return {
         leadOffset: match.index + maybeLeadingWhitespace.length,
         matchingString,
         replaceableString: match[2],
-      }
+      };
     }
   }
-  return null
+  return null;
 }
 
 function getPossibleQueryMatch(text: string): MenuTextMatch | null {
-  return checkForAtSignMentions(text, 1)
+  return checkForAtSignMentions(text, 1);
 }
 
 class MentionTypeaheadOption extends MenuOption {
-  name: string
-  picture: JSX.Element
+  name: string;
+  picture: JSX.Element;
 
   constructor(name: string, picture: JSX.Element) {
-    super(name)
-    this.name = name
-    this.picture = picture
+    super(name);
+    this.name = name;
+    this.picture = picture;
   }
 }
 
 export function MentionsPlugin(): JSX.Element | null {
-  const [editor] = useLexicalComposerContext()
+  const [editor] = useLexicalComposerContext();
 
-  const [queryString, setQueryString] = useState<string | null>(null)
+  const [queryString, setQueryString] = useState<string | null>(null);
 
-  const results = useMentionLookupService(queryString)
+  const results = useMentionLookupService(queryString);
 
   const checkForSlashTriggerMatch = useBasicTypeaheadTriggerMatch("/", {
     minLength: 0,
-  })
+  });
 
   const options = useMemo(
     () =>
@@ -608,7 +609,7 @@ export function MentionsPlugin(): JSX.Element | null {
         )
         .slice(0, SUGGESTION_LIST_LENGTH_LIMIT),
     [results]
-  )
+  );
 
   const onSelectOption = useCallback(
     (
@@ -617,30 +618,30 @@ export function MentionsPlugin(): JSX.Element | null {
       closeMenu: () => void
     ) => {
       editor.update(() => {
-        const mentionNode = $createMentionNode(selectedOption.name)
+        const mentionNode = $createMentionNode(selectedOption.name);
         if (nodeToReplace) {
-          nodeToReplace.replace(mentionNode)
+          nodeToReplace.replace(mentionNode);
         }
-        mentionNode.select()
-        closeMenu()
-      })
+        mentionNode.select();
+        closeMenu();
+      });
     },
     [editor]
-  )
+  );
 
   const checkForMentionMatch = useCallback(
     (text: string) => {
-      const slashMatch = checkForSlashTriggerMatch(text, editor)
+      const slashMatch = checkForSlashTriggerMatch(text, editor);
       if (slashMatch !== null) {
-        return null
+        return null;
       }
-      return getPossibleQueryMatch(text)
+      return getPossibleQueryMatch(text);
     },
     [checkForSlashTriggerMatch, editor]
-  )
+  );
 
   return (
-    // @ts-ignore
+    // @ts-expect-error
     <LexicalTypeaheadMenuPlugin<MentionTypeaheadOption>
       onQueryChange={setQueryString}
       onSelectOption={onSelectOption}
@@ -656,20 +657,20 @@ export function MentionsPlugin(): JSX.Element | null {
                 <Command
                   onKeyDown={(e) => {
                     if (e.key === "ArrowUp") {
-                      e.preventDefault()
+                      e.preventDefault();
                       setHighlightedIndex(
                         selectedIndex !== null
                           ? (selectedIndex - 1 + options.length) %
                               options.length
                           : options.length - 1
-                      )
+                      );
                     } else if (e.key === "ArrowDown") {
-                      e.preventDefault()
+                      e.preventDefault();
                       setHighlightedIndex(
                         selectedIndex !== null
                           ? (selectedIndex + 1) % options.length
                           : 0
-                      )
+                      );
                     }
                   }}
                 >
@@ -680,7 +681,7 @@ export function MentionsPlugin(): JSX.Element | null {
                           key={option.key}
                           value={option.name}
                           onSelect={() => {
-                            selectOptionAndCleanUp(option)
+                            selectOptionAndCleanUp(option);
                           }}
                           className={`flex items-center gap-2 ${
                             selectedIndex === index
@@ -698,8 +699,8 @@ export function MentionsPlugin(): JSX.Element | null {
               </div>,
               anchorElementRef.current
             )
-          : null
+          : null;
       }}
     />
-  )
+  );
 }

@@ -1,6 +1,7 @@
 export function invariant(
   cond?: boolean,
   message?: string,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   ...args: string[]
 ): asserts cond {
   if (cond) {
@@ -9,7 +10,7 @@ export function invariant(
 
   throw new Error(
     "Internal Lexical error: invariant() is meant to be replaced at compile " +
-      "time. There is no runtime version. Error: " +
-      message
+    "time. There is no runtime version. Error: " +
+    message
   )
 }
