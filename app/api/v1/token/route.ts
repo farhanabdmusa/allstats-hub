@@ -69,12 +69,19 @@ export async function POST(request: NextRequest) {
                 },
             })
 
-            await tx.user_preference.create({
-                data: {
+            await tx.user_preference.upsert({
+                create: {
                     id_user: userId.id,
                     lang: validatedData.data.lang || "id",
                     domain: validatedData.data.domain || "0000",
                 },
+                update: {
+                    lang: validatedData.data.lang || "id",
+                    domain: validatedData.data.domain || "0000",
+                },
+                where: {
+                    id_user: userId.id
+                }
             });
 
             const token = await createToken(userId.id.toString());
