@@ -12,7 +12,7 @@
     
 include:
   - template: Jobs/Dependency-Scanning.gitlab-ci.yml
-  - template: Security/Secret-Detection.gitlab-ci.yml
+  - template: Jobs/Secret-Detection.gitlab-ci.yml
   - template: Jobs/SAST.gitlab-ci.yml
   - template: Jobs/Container-Scanning.gitlab-ci.yml
 
