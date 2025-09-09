@@ -37,10 +37,12 @@ export async function PUT(request: NextRequest) {
         }
 
         const formData = await request.json();
+        const last_ip = ipAddress(request);
 
         const validatedData = UpdateUserPayload.safeParse({
             ...formData,
-            user_id: userId
+            user_id: userId,
+            last_ip: last_ip,
         })
         if (!validatedData.success) {
             const errors = z.treeifyError(validatedData.error);
@@ -51,13 +53,6 @@ export async function PUT(request: NextRequest) {
             })
         }
 
-        const cleanedData = Object.fromEntries(
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            Object.entries(validatedData.data).filter(([_, v]) => v !== null)
-        );
-        console.log("🚀 ~ PUT ~ cleanedData:", cleanedData)
-        const last_ip = ipAddress(request);
-
         const user = await prisma.user.update({
             omit: {
                 id: true,
@@ -66,7 +61,26 @@ export async function PUT(request: NextRequest) {
             where: {
                 id: userId
             },
-            data: { ...cleanedData, last_ip }
+            data: {
+                uuid: validatedData.data.uuid ?? undefined,
+                email: validatedData.data.email ?? undefined,
+                manufacturer: validatedData.data.manufacturer ?? undefined,
+                device_model: validatedData.data.device_model ?? undefined,
+                os: validatedData.data.os ?? undefined,
+                fcm_token: validatedData.data.fcm_token ?? undefined,
+                is_virtual: validatedData.data.is_virtual ?? undefined,
+                last_ip: validatedData.data.last_ip ?? undefined,
+                os_version: validatedData.data.os_version ?? undefined,
+                sign_up_type: validatedData.data.sign_up_type ?? undefined,
+                new_version: validatedData.data.new_version ?? undefined,
+                last_session: validatedData.data.last_session ?? undefined,
+                user_preference: {
+                    update: {
+                        lang: validatedData.data.lang ?? undefined,
+                        domain: validatedData.data.domain ?? undefined,
+                    }
+                }
+            }
         })
 
         return createApiResponse({
