@@ -28,6 +28,7 @@ export async function PUT(request: NextRequest) {
             }
         })
         if (!check) {
+            console.log("🚀 ~ PUT ~ check:", check)
             return createApiResponse({
                 status: false,
                 message: "User not found",
@@ -43,6 +44,7 @@ export async function PUT(request: NextRequest) {
         })
         if (!validatedData.success) {
             const errors = z.treeifyError(validatedData.error);
+            console.log("🚀 ~ PUT ~ errors:", errors)
             return createApiResponse({
                 status: false,
                 zodError: errors,
