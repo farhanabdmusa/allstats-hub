@@ -16,6 +16,9 @@ include:
   - template: Jobs/SAST.gitlab-ci.yml
   - template: Jobs/Container-Scanning.gitlab-ci.yml
 
+variables:
+  AST_ENABLE_MR_PIPELINES: "true"
+
 sast:
   stage: test
 
