@@ -1,28 +1,11 @@
-import { ALLOWED_ORIGIN, APP_KEY, AUDIENCE, ISSUER, SECRET_KEY } from "@/constants/v1/api";
+import { ALLOWED_ORIGIN, APP_KEY } from "@/constants/v1/api";
 import createApiResponse from "@/lib/create_api_response";
+import createToken from "@/lib/create_token";
 import prisma from "@/lib/prisma";
 import UserSchema from "@/zod/user_schema";
 import { ipAddress } from "@vercel/functions";
-import { SignJWT } from "jose";
 import type { NextRequest } from "next/server";
 import z from "zod";
-
-const createToken = async (aud: string) => {
-    const payload = {
-        role: "guest",
-    }
-
-    const token = await new SignJWT(payload)
-        .setProtectedHeader({ alg: 'HS256' })
-        .setIssuer(ISSUER)
-        .setIssuedAt()
-        .setExpirationTime("3h")
-        .setAudience(AUDIENCE)
-        .setSubject(aud)
-        .sign(SECRET_KEY);
-
-    return token;
-}
 
 export async function POST(request: NextRequest) {
     try {
