@@ -16,7 +16,6 @@ image-build:
   stage: build
   rules:
     - !reference [.valid-branch, rules]
-  extends: .build-buildah-image
   image: registry.bps.go.id/cache/containers/aio
   before_script:
     - echo "Logging into Gitlab Container Registry"
