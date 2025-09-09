@@ -1,8 +1,6 @@
 import { ALLOWED_ORIGIN, APP_KEY, AUDIENCE, ISSUER, SECRET_KEY } from "@/constants/v1/api";
 import createApiResponse from "@/lib/create_api_response";
-import { getCurrentDateTime } from "@/lib/jakarta_datetime";
 import prisma from "@/lib/prisma";
-import { CreateUserPayload } from "@/types/user";
 import UserSchema from "@/zod/user_schema";
 import { ipAddress } from "@vercel/functions";
 import { SignJWT } from "jose";
@@ -40,7 +38,7 @@ export async function POST(request: NextRequest) {
             });
         }
 
-        const formData = await request.json() as CreateUserPayload;
+        const formData = await request.json();
         const last_ip = ipAddress(request);
         formData["last_ip"] = last_ip;
 
@@ -54,16 +52,41 @@ export async function POST(request: NextRequest) {
             })
         }
 
+        const where = validatedData.data.email ? { email: validatedData.data.email } : { uuid: validatedData.data.uuid };
+
         const token = await prisma.$transaction(async (tx) => {
             const userId = await tx.user.upsert({
-                create: validatedData.data,
+                create: {
+                    uuid: validatedData.data.uuid,
+                    email: validatedData.data.email,
+                    manufacturer: validatedData.data.manufacturer,
+                    device_model: validatedData.data.device_model,
+                    os: validatedData.data.os,
+                    first_session: validatedData.data.first_session ?? undefined,
+                    fcm_token: validatedData.data.fcm_token,
+                    is_virtual: validatedData.data.is_virtual,
+                    last_ip: validatedData.data.last_ip,
+                    os_version: validatedData.data.os_version,
+                    sign_up_type: validatedData.data.sign_up_type,
+                    new_version: validatedData.data.new_version ?? undefined,
+                    last_session: validatedData.data.last_session ?? undefined,
+                },
                 update: {
-                    ...validatedData.data,
-                    last_session: getCurrentDateTime()!
+                    uuid: validatedData.data.uuid,
+                    email: validatedData.data.email,
+                    manufacturer: validatedData.data.manufacturer,
+                    device_model: validatedData.data.device_model,
+                    os: validatedData.data.os,
+                    first_session: validatedData.data.first_session ?? undefined,
+                    fcm_token: validatedData.data.fcm_token,
+                    is_virtual: validatedData.data.is_virtual,
+                    last_ip: validatedData.data.last_ip,
+                    os_version: validatedData.data.os_version,
+                    sign_up_type: validatedData.data.sign_up_type,
+                    new_version: validatedData.data.new_version ?? undefined,
+                    last_session: validatedData.data.last_session ?? undefined,
                 },
-                where: {
-                    uuid: validatedData.data.uuid
-                },
+                where: where,
                 select: {
                     id: true,
                 },
@@ -103,7 +126,7 @@ export async function POST(request: NextRequest) {
             data: { token }
         });
     } catch (error) {
-        console.log("🚀 ~ POST /api/v1/user:", error)
+        console.log("🚀 ~ POST /api/v1/token:", error)
         return createApiResponse({
             status: false,
             message: "Failed to insert user",
