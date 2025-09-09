@@ -5,8 +5,85 @@ import createApiResponse from "@/lib/create_api_response";
 import { convertDate2String } from "@/lib/jakarta_datetime";
 import z from "zod";
 import { jwtVerify } from "jose";
-import { AUDIENCE, SECRET_KEY } from "@/constants/v1/api";
+import { ALLOWED_ORIGIN, APP_KEY, AUDIENCE, SECRET_KEY } from "@/constants/v1/api";
 import { UpdateUserPayload } from "@/zod/user_schema";
+
+export async function GET(request: NextRequest) {
+    let userId: number = NaN;
+    try {
+        const uuid = request.nextUrl.searchParams.get("uuid")
+        const authHeader = request.headers.get('authorization');
+        if (uuid) {
+            const authToken = authHeader?.split(' ')[1];
+            const userAgent = request.headers.get("User-Agent");
+
+            if (!(authToken && userAgent && authToken == APP_KEY && userAgent == ALLOWED_ORIGIN)) {
+                return createApiResponse({
+                    status: false,
+                    message: 'Unauthorized',
+                    statusCode: 401,
+                });
+            }
+        } else {
+            if (!authHeader) {
+                return createApiResponse({
+                    status: false,
+                    message: 'Unauthorized',
+                    statusCode: 401,
+                });
+            }
+            const token = authHeader?.split(' ')[1];
+            const jwt = await jwtVerify(
+                token!,
+                SECRET_KEY,
+                { audience: AUDIENCE }
+            );
+            userId = Number(jwt.payload.sub!);
+        }
+
+        const user = await prisma.user.findUnique({
+            omit: {
+                id: true,
+                access_token: true,
+            },
+            where: {
+                id: !Number.isNaN(userId) ? userId : undefined,
+                uuid: Number.isNaN(userId) && uuid ? uuid : undefined
+            },
+            include: {
+                user_preference: {
+                    select: {
+                        domain: true,
+                        lang: true,
+                    }
+                }
+            }
+        })
+        if (!user) {
+            return createApiResponse({
+                status: false,
+                message: "User not found",
+                statusCode: 404
+            })
+        }
+
+        return createApiResponse({
+            status: true,
+            data: {
+                ...user,
+                first_session: convertDate2String(user.first_session),
+                last_session: convertDate2String(user.last_session),
+            },
+        })
+    } catch (error) {
+        console.log("🚀 ~ GET /api/v1/user ~ error:", error)
+        return createApiResponse({
+            status: false,
+            message: "Internal Server Error",
+            statusCode: 500,
+        })
+    }
+}
 
 export async function PUT(request: NextRequest) {
     try {

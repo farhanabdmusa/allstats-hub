@@ -11,6 +11,8 @@ export async function middleware(request: NextRequest) {
 
     if (pathname == "/api/v1/token") {
         return NextResponse.next();
+    } else if (pathname == "/api/v1/user" && request.method === "GET") {
+        return NextResponse.next();
     }
 
     const authHeader = request.headers.get('authorization');
