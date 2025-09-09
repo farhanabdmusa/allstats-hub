@@ -12,8 +12,8 @@ const UserSchema = z.object({
     lang: z.enum(["id", "en"]).optional().nullable(),
     domain: z.string().length(4).optional().nullable(),
     fcm_token: z.string().optional().nullable(),
-    first_session: z.date().optional().nullable(),
-    last_session: z.date().optional().nullable(),
+    first_session: z.string().optional().nullable(),
+    last_session: z.string().optional().nullable(),
     sign_up_type: z.number().optional().nullable(),
     new_version: z.boolean().optional().nullable(),
 });

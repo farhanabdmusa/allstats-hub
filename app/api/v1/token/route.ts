@@ -46,6 +46,7 @@ export async function POST(request: NextRequest) {
 
         if (!validatedData.success) {
             const errors = z.treeifyError(validatedData.error);
+            console.log("🚀 ~ POST /api/v1/token:", errors.properties)
             return createApiResponse({
                 status: false,
                 zodError: errors,
@@ -77,7 +78,6 @@ export async function POST(request: NextRequest) {
                     manufacturer: validatedData.data.manufacturer,
                     device_model: validatedData.data.device_model,
                     os: validatedData.data.os,
-                    first_session: validatedData.data.first_session ?? undefined,
                     fcm_token: validatedData.data.fcm_token,
                     is_virtual: validatedData.data.is_virtual,
                     last_ip: validatedData.data.last_ip,
