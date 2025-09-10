@@ -14,7 +14,7 @@
   environment:
     name: ${CI_COMMIT_BRANCH}
   image: 
-    name: registry.bps.go.id/cache/openshift/origin-cli
+    name: registry.bps.go.id/factory/oc-kustomize
     entrypoint: [""]
   before_script:
     - |
@@ -22,12 +22,6 @@
       oc project "$K8S_NS"
     - oc whoami
   script:
-    - |
-      export KUSTOMIZE_VERSION=$(oc version | grep 'Kustomize Version' | awk -F '[:,]' '{gsub(/ /, "", $2); print $2}')
-      curl -sLO https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize/${KUSTOMIZE_VERSION}/kustomize_${KUSTOMIZE_VERSION}_linux_amd64.tar.gz
-      tar -xzf kustomize_${KUSTOMIZE_VERSION}_linux_amd64.tar.gz
-      mv kustomize /usr/local/bin/kustomize
-      chmod +x /usr/local/bin/kustomize
     - kustomize version
     - cd k8s/${CI_COMMIT_BRANCH}
     - kustomize edit set image ${CI_REGISTRY_IMAGE}=${IMAGE_TAG}
