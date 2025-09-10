@@ -87,7 +87,9 @@ model notification_topic {
 model topic {
   id                 Int                  @id(map: "topic_pk") @default(autoincrement())
   name               String               @unique(map: "topic_unique") @db.VarChar
-  display_name       String               @db.VarChar
+  id_display_name    String               @db.VarChar
+  en_display_name    String               @db.VarChar
+  user_select        Boolean              @default(false)
   notification_topic notification_topic[]
 }
 

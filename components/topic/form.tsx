@@ -19,17 +19,21 @@ import { IconLoader2 } from "@tabler/icons-react";
 import Link from "next/link";
 import { Topic } from "@/types/topic";
 import { createTopic, updateTopic } from "@/data/topic";
+import { Switch } from "@/components/ui/switch";
 
 const formSchema = z.object({
   name: z
     .string()
     .min(2)
     .max(50)
+    .trim()
     .regex(
       /^[a-zA-Z0-9_]+$/,
       "Only letters, numbers, and underscores are allowed."
     ),
-  display_name: z.string().min(2).max(50),
+  id_display_name: z.string().min(2).max(50),
+  en_display_name: z.string().min(2).max(50),
+  user_select: z.boolean(),
 });
 
 const TopicForm = ({
@@ -43,7 +47,9 @@ const TopicForm = ({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: data?.name ?? "",
-      display_name: data?.display_name ?? "",
+      id_display_name: data?.id_display_name ?? "",
+      en_display_name: data?.en_display_name ?? "",
+      user_select: data?.user_select ?? false,
     },
   });
 
@@ -115,14 +121,44 @@ const TopicForm = ({
         />
         <FormField
           control={form.control}
-          name="display_name"
+          name="id_display_name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Display Name</FormLabel>
+              <FormLabel>ID Display Name</FormLabel>
               <FormControl>
-                <Input placeholder="Topic Display Name" {...field} />
+                <Input placeholder="Topic ID Display Name" {...field} />
               </FormControl>
               <FormMessage className="text-xs" />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="en_display_name"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>EN Display Name</FormLabel>
+              <FormControl>
+                <Input placeholder="Topic EN Display Name" {...field} />
+              </FormControl>
+              <FormMessage className="text-xs" />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="user_select"
+          render={() => (
+            <FormItem className="flex flex-row items-center space-x-2 space-y-0">
+              <FormControl>
+                <Switch
+                  checked={form.watch("user_select")}
+                  onCheckedChange={(value) =>
+                    form.setValue("user_select", value)
+                  }
+                />
+              </FormControl>
+              <FormLabel>User Selection</FormLabel>
             </FormItem>
           )}
         />

@@ -10,7 +10,7 @@ export async function countAllTopic() {
 }
 
 export async function getAllTopic(pageSize?: number, page?: number, sort?: SortingState) {
-    const flatSort = sort?.map((s) => ({ [s.id]: s.desc ? "desc" : "asc" }));
+    const flatSort = sort && sort.length > 0 ? sort.map((s) => ({ [s.id]: s.desc ? "desc" : "asc" })) : [{ id: "desc" }];
     const topics = await prisma.topic.findMany({
         orderBy: flatSort,
         take: pageSize,

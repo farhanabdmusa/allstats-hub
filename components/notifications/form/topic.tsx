@@ -63,11 +63,11 @@ const TopicSelect = ({
                   }
                   return (
                     <Badge key={v}>
-                      {item.display_name}
+                      {item.id_display_name}
                       <span
                         className="ml-1 hover:cursor-pointer"
                         role="button"
-                        aria-label={`Remove ${item.display_name}`}
+                        aria-label={`Remove ${item.id_display_name}`}
                         onClick={(e) => {
                           e.stopPropagation();
                           onChange(values.filter((val) => val !== v));
@@ -98,7 +98,7 @@ const TopicSelect = ({
                     setOpen(false);
                   }}
                 >
-                  {topic.display_name}
+                  {topic.id_display_name}
                   <Check
                     className={cn(
                       "ml-auto",

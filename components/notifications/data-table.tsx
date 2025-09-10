@@ -138,7 +138,9 @@ const columns: ColumnDef<Notification>[] = [
               </div>
               <HoverCardContent className="flex flex-wrap gap-1">
                 {topics.map((item) => (
-                  <Badge key={item.topic.id}>{item.topic.display_name}</Badge>
+                  <Badge key={item.topic.id}>
+                    {item.topic.id_display_name}
+                  </Badge>
                 ))}
               </HoverCardContent>
             </HoverCard>

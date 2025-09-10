@@ -47,6 +47,7 @@ import {
 import Link from "next/link";
 import { Topic } from "@/types/topic";
 import { countAllTopic, getAllTopic } from "@/data/topic";
+import { Badge } from "@/components/ui/badge";
 
 const columns: ColumnDef<Topic>[] = [
   {
@@ -65,9 +66,28 @@ const columns: ColumnDef<Topic>[] = [
     enableSorting: true,
   },
   {
-    accessorKey: "display_name",
-    header: "Display Name",
+    accessorKey: "id_display_name",
+    header: "ID Display Name",
     enableSorting: true,
+  },
+  {
+    accessorKey: "en_display_name",
+    header: "EN Display Name",
+    enableSorting: true,
+  },
+  {
+    accessorKey: "user_select",
+    header: "User Selection",
+    enableSorting: true,
+    cell: ({ row }) => (
+      <div className="flex justify-center items-center">
+        {row.original.user_select ? (
+          <Badge variant="positive">Yes</Badge>
+        ) : (
+          <Badge variant="destructive">No</Badge>
+        )}
+      </div>
+    ),
   },
   {
     id: "actions",
@@ -101,9 +121,7 @@ export function DataTable() {
   const [loading, setLoading] = useState(true);
   const [total, setTotal] = useState(0);
   const [data, setData] = useState<Topic[]>([]);
-  const [sorting, setSorting] = useState<SortingState>([
-    { id: "display_name", desc: false },
-  ]);
+  const [sorting, setSorting] = useState<SortingState>([]);
   const [columnWidth, setColumnWidth] = useState<number[]>();
   const [pagination, setPagination] = useState({
     pageIndex: 0,
