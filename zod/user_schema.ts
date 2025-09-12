@@ -9,13 +9,14 @@ const UserSchema = z.object({
     os_version: z.string().optional(),
     is_virtual: z.boolean().optional(),
     last_ip: z.ipv4().optional().nullable(),
-    lang: z.enum(["id", "en"]).optional().nullable(),
-    domain: z.string().length(4).optional().nullable(),
     fcm_token: z.string().optional().nullable(),
     first_session: z.string().optional().nullable(),
     last_session: z.string().optional().nullable(),
     sign_up_type: z.number().optional().nullable(),
     new_version: z.boolean().optional().nullable(),
+    lang: z.enum(["id", "en"]),
+    domain: z.string().length(4),
+    topic_selection: z.boolean(),
 });
 
 const UpdateUserPayload = UserSchema.extend({
@@ -34,6 +35,7 @@ const UpdateUserPayload = UserSchema.extend({
     last_session: z.string().optional().nullable(),
     sign_up_type: z.number().optional().nullable(),
     new_version: z.boolean().optional().nullable(),
+    topic_selection: z.boolean().optional().nullable(),
 });
 
 export default UserSchema;

@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
         const where = validatedData.data.email ? { email: validatedData.data.email } : { uuid: validatedData.data.uuid };
 
         const token = await prisma.$transaction(async (tx) => {
-            const userId = await tx.user.upsert({
+            const user = await tx.user.upsert({
                 create: {
                     uuid: validatedData.data.uuid,
                     email: validatedData.data.email,
@@ -54,6 +54,13 @@ export async function POST(request: NextRequest) {
                     sign_up_type: validatedData.data.sign_up_type,
                     new_version: validatedData.data.new_version ?? undefined,
                     last_session: validatedData.data.last_session ?? undefined,
+                    user_preference: {
+                        create: {
+                            lang: validatedData.data.lang || "id",
+                            domain: validatedData.data.domain || "0000",
+                            topic_selection: false,
+                        }
+                    }
                 },
                 update: {
                     uuid: validatedData.data.uuid,
@@ -72,41 +79,30 @@ export async function POST(request: NextRequest) {
                 where: where,
                 select: {
                     id: true,
+                    user_preference: {
+                        select: {
+                            lang: true,
+                            domain: true,
+                            topic_selection: true,
+                        }
+                    }
                 },
             })
 
-            const userPreference = await tx.user_preference.upsert({
-                omit: {
-                    id: true,
-                    id_user: true,
-                },
-                create: {
-                    id_user: userId.id,
-                    lang: validatedData.data.lang || "id",
-                    domain: validatedData.data.domain || "0000",
-                },
-                update: {
-                    // Dont update user preference on token generation
-                },
-                where: {
-                    id_user: userId.id
-                }
-            });
-
-            const token = await createToken(userId.id.toString());
+            const token = await createToken(user.id.toString());
 
             await tx.user.update({
                 data: {
                     access_token: token
                 },
                 where: {
-                    id: userId.id
+                    id: user.id
                 }
             })
 
             return {
                 token: token,
-                user_preference: userPreference,
+                user_preference: user.user_preference,
             };
         });
 

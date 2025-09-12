@@ -94,9 +94,10 @@ model topic {
 }
 
 model user_preference {
-  id      Int    @id(map: "user_preference_pk") @default(autoincrement())
-  id_user Int    @unique(map: "user_preference_id_user")
-  lang    String @db.VarChar
-  domain  String @default("0000") @db.VarChar
-  user    user   @relation(fields: [id_user], references: [id], onDelete: Cascade, map: "user_preference_user_fk")
+  id              Int     @id(map: "user_preference_pk") @default(autoincrement())
+  id_user         Int     @unique(map: "user_preference_id_user")
+  lang            String  @db.VarChar
+  domain          String  @default("0000") @db.VarChar
+  topic_selection Boolean @default(false)
+  user            user    @relation(fields: [id_user], references: [id], onDelete: Cascade, map: "user_preference_user_fk")
 }
