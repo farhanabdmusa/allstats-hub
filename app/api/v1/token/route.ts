@@ -75,15 +75,18 @@ export async function POST(request: NextRequest) {
                 },
             })
 
-            await tx.user_preference.upsert({
+            const userPreference = await tx.user_preference.upsert({
+                omit: {
+                    id: true,
+                    id_user: true,
+                },
                 create: {
                     id_user: userId.id,
                     lang: validatedData.data.lang || "id",
                     domain: validatedData.data.domain || "0000",
                 },
                 update: {
-                    lang: validatedData.data.lang || "id",
-                    domain: validatedData.data.domain || "0000",
+                    // Dont update user preference on token generation
                 },
                 where: {
                     id_user: userId.id
@@ -101,12 +104,15 @@ export async function POST(request: NextRequest) {
                 }
             })
 
-            return token;
+            return {
+                token: token,
+                user_preference: userPreference,
+            };
         });
 
         return createApiResponse({
             status: true,
-            data: { token }
+            data: { ...token }
         });
     } catch (error) {
         console.log("🚀 ~ POST /api/v1/token:", error)
