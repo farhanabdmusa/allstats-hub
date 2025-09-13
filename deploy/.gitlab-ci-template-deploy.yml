@@ -23,7 +23,7 @@
     - oc whoami
   script:
     - kustomize version
-    - cd k8s/${CI_COMMIT_BRANCH}
+    - cd ._k8s/${CI_COMMIT_BRANCH}
     - kustomize edit set image ${CI_REGISTRY_IMAGE}=${IMAGE_TAG}
     - kustomize build . | oc apply -f -
 
