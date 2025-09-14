@@ -35,6 +35,8 @@
   before_script:
     - echo "Logging into Gitlab Container Registry"
     - buildah login -u "$CI_REGISTRY_USER" --password "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
+    - echo "Logging into Base Container Registry"
+    - buildah login -u "$BASE_REGISTRY_USER" --password "$BASE_REGISTRY_PASSWORD" "$BASE_REGISTRY"
   script:
     - echo "Building $IMAGE_TAG"
     - |
