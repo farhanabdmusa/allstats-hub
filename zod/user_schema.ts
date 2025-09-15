@@ -1,4 +1,4 @@
-import z from "zod";
+import { z } from "zod";
 
 const UserSchema = z.object({
     uuid: z.string("UUID is required"),
@@ -36,6 +36,7 @@ const UpdateUserPayload = UserSchema.extend({
     sign_up_type: z.number().optional().nullable(),
     new_version: z.boolean().optional().nullable(),
     topic_selection: z.boolean().optional().nullable(),
+    topic_selected: z.array(z.number()).optional().nullable()
 });
 
 export default UserSchema;

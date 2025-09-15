@@ -32,6 +32,7 @@ model user {
   sign_up_type_relation sign_up_type?       @relation("user_sign_up_typeTosign_up_type", fields: [sign_up_type], references: [id], onDelete: Restrict, map: "user_sign_up_type_fk")
   user_like_product     user_like_product[]
   user_preference       user_preference?
+  user_topic            user_topic[]
 }
 
 model product_type {
@@ -91,6 +92,7 @@ model topic {
   en_display_name    String               @db.VarChar
   user_select        Boolean              @default(false)
   notification_topic notification_topic[]
+  user_topic         user_topic[]
 }
 
 model user_preference {
@@ -100,4 +102,14 @@ model user_preference {
   domain          String  @default("0000") @db.VarChar
   topic_selection Boolean @default(false)
   user            user    @relation(fields: [id_user], references: [id], onDelete: Cascade, map: "user_preference_user_fk")
+}
+
+model user_topic {
+  id_user       Int
+  id_topic      Int
+  subscribed_at DateTime @default(now()) @db.Timestamptz(6)
+  topic         topic    @relation(fields: [id_topic], references: [id], onDelete: Cascade, map: "user_topic_topic_fk")
+  user          user     @relation(fields: [id_user], references: [id], onDelete: Cascade, map: "user_topic_user_fk")
+
+  @@id([id_user, id_topic], map: "user_topic_pk")
 }
