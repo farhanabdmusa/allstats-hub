@@ -23,7 +23,6 @@ image-build:
     - echo "Login into Shared Container Registry"
     - buildah login -u ${SHARED_REGISTRY_USER} --password ${SHARED_REGISTRY_PASSWORD} ${SHARED_REGISTRY}
   script:
-    - podman pull registry.bps.go.id/cache/containers/aio
     - echo "Building ${CI_REGISTRY_IMAGE}"
     - buildah bud --tag ${CI_REGISTRY_IMAGE} --pull=newer
     - echo "Pushing ${CI_REGISTRY_IMAGE}"
