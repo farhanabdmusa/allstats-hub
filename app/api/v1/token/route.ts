@@ -36,79 +36,138 @@ export async function POST(request: NextRequest) {
             })
         }
 
-        const where = validatedData.data.email ? { email: validatedData.data.email } : { uuid: validatedData.data.uuid };
 
-        const token = await prisma.$transaction(async (tx) => {
-            const user = await tx.user.upsert({
-                create: {
-                    uuid: validatedData.data.uuid,
-                    email: validatedData.data.email,
-                    manufacturer: validatedData.data.manufacturer,
-                    device_model: validatedData.data.device_model,
-                    os: validatedData.data.os,
-                    first_session: validatedData.data.first_session ?? undefined,
-                    fcm_token: validatedData.data.fcm_token,
-                    is_virtual: validatedData.data.is_virtual,
-                    last_ip: validatedData.data.last_ip,
-                    os_version: validatedData.data.os_version,
-                    sign_up_type: validatedData.data.sign_up_type,
-                    new_version: validatedData.data.new_version ?? undefined,
-                    last_session: validatedData.data.last_session ?? undefined,
-                    user_preference: {
-                        create: {
-                            lang: validatedData.data.lang || "id",
-                            domain: validatedData.data.domain || "0000",
-                            topic_selection: false,
-                        }
-                    }
-                },
-                update: {
-                    uuid: validatedData.data.uuid,
-                    email: validatedData.data.email,
-                    manufacturer: validatedData.data.manufacturer,
-                    device_model: validatedData.data.device_model,
-                    os: validatedData.data.os,
-                    fcm_token: validatedData.data.fcm_token,
-                    is_virtual: validatedData.data.is_virtual,
-                    last_ip: validatedData.data.last_ip,
-                    os_version: validatedData.data.os_version,
-                    sign_up_type: validatedData.data.sign_up_type,
-                    new_version: validatedData.data.new_version ?? undefined,
-                    last_session: validatedData.data.last_session ?? undefined,
-                },
-                where: where,
-                select: {
-                    id: true,
-                    user_preference: {
-                        select: {
-                            lang: true,
-                            domain: true,
-                            topic_selection: true,
-                        }
-                    }
-                },
-            })
-
-            const token = await createToken(user.id.toString());
-
-            await tx.user.update({
-                data: {
-                    access_token: token
-                },
+        const update = await prisma.$transaction(async (tx) => {
+            const user_device = await tx.user_device.findFirst({
                 where: {
-                    id: user.id
+                    uuid: validatedData.data.uuid
                 }
-            })
+            });
+            if (user_device) {
+                const token = await createToken(user_device.id_user.toString(), validatedData.data.uuid);
+                const refreshToken = crypto.randomUUID();
+                // Update user, user_device
+                const updatedUser = await tx.user.update({
+                    where: {
+                        id: user_device.id_user
+                    },
+                    data: {
+                        name: validatedData.data.name,
+                        email: validatedData.data.email,
+                        sign_up_type: validatedData.data.sign_up_type,
+                        user_device: {
+                            update: {
+                                where: {
+                                    id_user_uuid: {
+                                        id_user: user_device.id_user,
+                                        uuid: validatedData.data.uuid!
+                                    }
+                                },
+                                data: {
+                                    manufacturer: validatedData.data.manufacturer,
+                                    device_model: validatedData.data.device_model,
+                                    os: validatedData.data.os,
+                                    first_session: validatedData.data.first_session ?? undefined,
+                                    fcm_token: validatedData.data.fcm_token,
+                                    is_virtual: validatedData.data.is_virtual,
+                                    last_ip: validatedData.data.last_ip,
+                                    os_version: validatedData.data.os_version,
+                                    new_version: validatedData.data.new_version ?? undefined,
+                                    last_session: validatedData.data.last_session ?? undefined,
+                                    access_token: token,
+                                    refresh_token: refreshToken,
+                                }
+                            }
+                        },
+                        user_preference: {
+                            update: {
+                                lang: validatedData.data.lang ?? undefined,
+                                domain: validatedData.data.domain ?? undefined,
+                                topic_selection: validatedData.data.topic_selection ?? undefined,
+                            }
+                        }
+                    },
+                    include: {
+                        user_preference: {
+                            select: {
+                                domain: true,
+                                lang: true,
+                                topic_selection: true,
+                            }
+                        },
+                    }
+                });
 
-            return {
-                token: token,
-                user_preference: user.user_preference,
-            };
+                return {
+                    access_token: token,
+                    refresh_token: refreshToken,
+                    ...updatedUser.user_preference,
+                };
+            } else {
+                const user = await tx.user.create({
+                    data: {
+                        name: validatedData.data.name,
+                        email: validatedData.data.email,
+                        sign_up_type: validatedData.data.sign_up_type,
+                        user_device: {
+                            create: {
+                                uuid: validatedData.data.uuid,
+                                manufacturer: validatedData.data.manufacturer,
+                                device_model: validatedData.data.device_model,
+                                os: validatedData.data.os,
+                                first_session: validatedData.data.first_session ?? undefined,
+                                fcm_token: validatedData.data.fcm_token,
+                                is_virtual: validatedData.data.is_virtual,
+                                last_ip: validatedData.data.last_ip,
+                                os_version: validatedData.data.os_version,
+                                new_version: validatedData.data.new_version ?? undefined,
+                                last_session: validatedData.data.last_session ?? undefined,
+                            }
+                        },
+                        user_preference: {
+                            create: {
+                                lang: validatedData.data.lang || "id",
+                                domain: validatedData.data.domain || "0000",
+                                topic_selection: false,
+                            }
+                        }
+                    },
+                    select: {
+                        id: true,
+                        user_preference: {
+                            select: {
+                                domain: true,
+                                lang: true,
+                                topic_selection: true,
+                            }
+                        }
+                    }
+                });
+                const token = await createToken(user.id.toString(), validatedData.data.uuid);
+                const refreshToken = crypto.randomUUID();
+                await tx.user_device.update({
+                    where: {
+                        id_user_uuid: {
+                            id_user: user.id,
+                            uuid: validatedData.data.uuid!,
+                        }
+                    },
+                    data: {
+                        access_token: token,
+                        refresh_token: refreshToken,
+                    }
+                });
+                return {
+                    access_token: token,
+                    refresh_token: refreshToken,
+                    ...user.user_preference,
+                };
+            }
         });
 
         return createApiResponse({
             status: true,
-            data: { ...token }
+            data: update,
         });
     } catch (error) {
         console.log("🚀 ~ POST /api/v1/token:", error)

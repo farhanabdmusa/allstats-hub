@@ -2,7 +2,6 @@ import { type NextRequest } from "next/server";
 import { ipAddress } from '@vercel/functions'
 import prisma from "@/lib/prisma";
 import createApiResponse from "@/lib/create_api_response";
-import { convertDate2String } from "@/lib/jakarta_datetime";
 import z from "zod";
 import { jwtVerify } from "jose";
 import { AUDIENCE, SECRET_KEY } from "@/constants/v1/api";
@@ -26,8 +25,9 @@ export async function GET(request: NextRequest) {
             { audience: AUDIENCE }
         );
         const userId = Number(jwt.payload.sub!);
+        const uuid = jwt.payload.jti;
 
-        if (Number.isNaN(userId)) {
+        if (Number.isNaN(userId) || uuid === undefined) {
             return createApiResponse({
                 status: false,
                 message: "User not found",
@@ -38,7 +38,6 @@ export async function GET(request: NextRequest) {
         const user = await prisma.user.findUnique({
             omit: {
                 id: true,
-                access_token: true,
             },
             where: {
                 id: userId
@@ -61,25 +60,59 @@ export async function GET(request: NextRequest) {
         }
 
 
-        const newToken = await createToken(userId.toString());
+        const newToken = await createToken(userId.toString(), uuid);
+        const refreshToken = crypto.randomUUID();
 
-        await prisma.user.update({
+        const updatedUser = await prisma.user.update({
             data: {
-                access_token: newToken
+                user_device: {
+                    update: {
+                        where: {
+                            id_user_uuid: {
+                                id_user: userId,
+                                uuid: uuid,
+                            }
+                        },
+                        data: {
+                            access_token: newToken,
+                            refresh_token: refreshToken,
+                        }
+                    }
+                }
             },
             where: {
-                id: userId
+                id: userId,
+                user_device: {
+                    some: {
+                        uuid: uuid,
+                    }
+                }
+            },
+            include: {
+                user_preference: {
+                    select: {
+                        domain: true,
+                        lang: true,
+                        topic_selection: true,
+                    }
+                },
             }
         })
 
+        const data = {
+            email: updatedUser.email,
+            sign_up_type: updatedUser.sign_up_type,
+            name: updatedUser.name,
+            domain: updatedUser.user_preference?.domain,
+            lang: updatedUser.user_preference?.lang,
+            topic_selection: updatedUser.user_preference?.topic_selection,
+            access_token: newToken,
+            refresh_token: refreshToken,
+        }
+
         return createApiResponse({
             status: true,
-            data: {
-                ...user,
-                first_session: convertDate2String(user.first_session),
-                last_session: convertDate2String(user.last_session),
-                token: token,
-            },
+            data: data,
         })
     } catch (error) {
         console.log("🚀 ~ GET /api/v1/user ~ error:", error)
@@ -101,6 +134,15 @@ export async function PUT(request: NextRequest) {
             { audience: AUDIENCE }
         );
         const userId = Number(jwt.payload.sub!);
+        const uuid = jwt.payload.jti;
+
+        if (Number.isNaN(userId) || uuid === undefined) {
+            return createApiResponse({
+                status: false,
+                message: "User not found",
+                statusCode: 404
+            })
+        }
 
         const check = await prisma.user.findUnique({
             select: {
@@ -119,6 +161,9 @@ export async function PUT(request: NextRequest) {
             })
         }
 
+        const accessToken = await createToken(userId.toString(), uuid);
+        const refreshToken = crypto.randomUUID()
+
         const formData = await request.json();
         const last_ip = ipAddress(request);
 
@@ -136,27 +181,53 @@ export async function PUT(request: NextRequest) {
             })
         }
 
-        const user = await prisma.user.update({
+        prisma.user.update({
             omit: {
                 id: true,
-                access_token: true,
             },
             where: {
                 id: userId
             },
             data: {
-                uuid: validatedData.data.uuid ?? undefined,
+                user_device: {
+                    upsert: {
+                        where: {
+                            id_user_uuid: {
+                                id_user: userId,
+                                uuid: uuid,
+                            }
+                        },
+                        create: {
+                            uuid: uuid,
+                            manufacturer: validatedData.data.manufacturer ?? undefined,
+                            device_model: validatedData.data.device_model ?? undefined,
+                            os: validatedData.data.os ?? undefined,
+                            os_version: validatedData.data.os_version ?? undefined,
+                            is_virtual: validatedData.data.is_virtual ?? undefined,
+                            last_ip: validatedData.data.last_ip ?? undefined,
+                            new_version: validatedData.data.new_version ?? undefined,
+                            fcm_token: validatedData.data.fcm_token ?? undefined,
+                            access_token: accessToken,
+                            refresh_token: refreshToken,
+                        },
+                        update: {
+                            manufacturer: validatedData.data.manufacturer ?? undefined,
+                            device_model: validatedData.data.device_model ?? undefined,
+                            os: validatedData.data.os ?? undefined,
+                            os_version: validatedData.data.os_version ?? undefined,
+                            is_virtual: validatedData.data.is_virtual ?? undefined,
+                            last_ip: validatedData.data.last_ip ?? undefined,
+                            new_version: validatedData.data.new_version ?? undefined,
+                            fcm_token: validatedData.data.fcm_token ?? undefined,
+                            access_token: accessToken,
+                            refresh_token: refreshToken,
+                        }
+                    },
+
+                },
                 email: validatedData.data.email ?? undefined,
-                manufacturer: validatedData.data.manufacturer ?? undefined,
-                device_model: validatedData.data.device_model ?? undefined,
-                os: validatedData.data.os ?? undefined,
-                fcm_token: validatedData.data.fcm_token ?? undefined,
-                is_virtual: validatedData.data.is_virtual ?? undefined,
-                last_ip: validatedData.data.last_ip ?? undefined,
-                os_version: validatedData.data.os_version ?? undefined,
                 sign_up_type: validatedData.data.sign_up_type ?? undefined,
-                new_version: validatedData.data.new_version ?? undefined,
-                last_session: validatedData.data.last_session ?? undefined,
+                name: validatedData.data.name ?? undefined,
                 user_preference: {
                     update: {
                         lang: validatedData.data.lang ?? undefined,
@@ -164,16 +235,18 @@ export async function PUT(request: NextRequest) {
                         topic_selection: validatedData.data.topic_selection ?? undefined,
                     }
                 },
-            }
+            },
         });
+
+        const data = {
+            ...validatedData.data,
+            access_token: accessToken,
+            refresh_token: refreshToken,
+        }
 
         return createApiResponse({
             status: true,
-            data: {
-                ...user,
-                first_session: convertDate2String(user.first_session),
-                last_session: convertDate2String(user.last_session),
-            },
+            data: data,
         })
     } catch (error) {
         console.log("🚀 ~ PUT /api/v1/user ~ error:", error)

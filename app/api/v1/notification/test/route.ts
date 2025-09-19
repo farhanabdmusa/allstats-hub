@@ -5,16 +5,14 @@ import { MulticastMessage } from "firebase-admin/messaging"
 
 export async function GET() {
   try {
-    const listTokens = await prisma.user.findMany({
+    const listTokens = await prisma.user_device.findMany({
       select: {
         fcm_token: true
       },
       where: {
-        fcm_token: {
-          not: null
-        }
+        fcm_token: { not: null }
       }
-    })
+    });
     console.log("🚀 ~ GET ~ listTokens:", listTokens.map(user => user.fcm_token))
 
     const message: MulticastMessage = {

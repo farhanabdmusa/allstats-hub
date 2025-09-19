@@ -15,21 +15,11 @@ model sign_up_type {
 
 model user {
   id                    Int                 @id(map: "user_pk") @default(autoincrement())
-  uuid                  String              @unique(map: "user_unique") @db.VarChar
   email                 String?             @unique(map: "user_unique_email") @db.VarChar
-  new_version           Boolean             @default(true)
-  first_session         DateTime            @default(now()) @db.Timestamptz(6)
-  last_session          DateTime            @default(now()) @db.Timestamptz(6)
-  manufacturer          String?             @db.VarChar
-  device_model          String?             @db.VarChar
-  os                    String?             @db.VarChar
-  os_version            String?             @db.VarChar
-  is_virtual            Boolean             @default(false)
-  last_ip               String?             @db.VarChar
   sign_up_type          Int?
-  fcm_token             String?             @unique(map: "user_unique_1") @db.VarChar
-  access_token          String?             @unique(map: "user_access_token") @db.VarChar
+  name                  String?             @db.VarChar
   sign_up_type_relation sign_up_type?       @relation("user_sign_up_typeTosign_up_type", fields: [sign_up_type], references: [id], onDelete: Restrict, map: "user_sign_up_type_fk")
+  user_device           user_device[]
   user_like_product     user_like_product[]
   user_preference       user_preference?
   user_topic            user_topic[]
@@ -112,4 +102,24 @@ model user_topic {
   user          user     @relation(fields: [id_user], references: [id], onDelete: Cascade, map: "user_topic_user_fk")
 
   @@id([id_user, id_topic], map: "user_topic_pk")
+}
+
+model user_device {
+  id_user       Int
+  uuid          String   @db.VarChar
+  os            String?  @db.VarChar
+  manufacturer  String?  @db.VarChar
+  device_model  String?  @db.VarChar
+  os_version    String?  @db.VarChar
+  is_virtual    Boolean  @default(false)
+  new_version   Boolean  @default(true)
+  first_session DateTime @default(now()) @db.Timestamptz(6)
+  last_session  DateTime @default(now()) @db.Timestamptz(6)
+  last_ip       String?  @db.VarChar
+  access_token  String?  @db.VarChar
+  refresh_token String?  @db.VarChar
+  fcm_token     String?  @db.VarChar
+  user          user     @relation(fields: [id_user], references: [id], onDelete: Cascade, map: "user_device_user_fk")
+
+  @@id([id_user, uuid], map: "user_device_pk")
 }

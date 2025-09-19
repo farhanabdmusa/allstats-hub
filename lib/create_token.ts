@@ -3,7 +3,7 @@
 import { SignJWT } from "jose";
 import { AUDIENCE, ISSUER, SECRET_KEY } from "@/constants/v1/api";
 
-const createToken = async (aud: string) => {
+const createToken = async (aud: string, jti: string) => {
     const payload = {
         role: "guest",
     }
@@ -15,6 +15,7 @@ const createToken = async (aud: string) => {
         .setExpirationTime("3h")
         .setAudience(AUDIENCE)
         .setSubject(aud)
+        .setJti(jti)
         .sign(SECRET_KEY);
 
     return token;
