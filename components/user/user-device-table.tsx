@@ -7,7 +7,6 @@ import {
   IconChevronRight,
   IconChevronsLeft,
   IconChevronsRight,
-  IconLoader2,
 } from "@tabler/icons-react";
 import {
   ColumnDef,
@@ -36,87 +35,34 @@ import {
 } from "@/components/ui/table";
 import { Fragment, useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
-import { User } from "@/types/user";
-import { countAllUser, getAllUser } from "@/data/user";
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { UserDeviceTable } from "./user-device-table";
+import { UserDevice } from "@/types/user";
 
-const columns: ColumnDef<User>[] = [
+const columns: ColumnDef<UserDevice>[] = [
   {
-    id: "no",
-    header: "No.",
-    cell: ({ row, table }) =>
-      table.getState().pagination.pageIndex *
-        table.getState().pagination.pageSize +
-      row.index +
-      1,
-    enableSorting: false,
-  },
-  {
-    accessorKey: "email",
-    header: "Email",
+    accessorKey: "uuid",
+    header: "UUID",
     enableSorting: true,
-    cell: ({ row }) => row.getValue("email") || "N/A",
   },
   {
-    accessorKey: "sign_up_type",
-    header: "Sign Up Type",
+    accessorKey: "last_session",
+    header: "Last Session",
     enableSorting: true,
-    cell: ({ row }) => row.getValue("sign_up_type") || "N/A",
-  },
-  {
-    accessorKey: "user_device",
-    header: "User Devices",
-    enableSorting: false,
-    cell: ({ row }) => (
-      <Dialog>
-        <form>
-          <DialogTrigger asChild>
-            <Button variant="outline">
-              Show {row.original.user_device.length} Device
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[80vw]">
-            <DialogHeader>
-              <DialogTitle>User Device</DialogTitle>
-              <DialogDescription>
-                Make changes to your profile here. Click save when you&apos;re
-                done.
-              </DialogDescription>
-            </DialogHeader>
-            <UserDeviceTable data={row.original.user_device} />
-            <DialogFooter>
-              <DialogClose asChild>
-                <Button variant="outline">Close</Button>
-              </DialogClose>
-            </DialogFooter>
-          </DialogContent>
-        </form>
-      </Dialog>
-    ),
+    cell: ({ row }) => new Date(row.getValue("last_session")).toLocaleString(),
   },
 ];
 
-export function DataTable() {
+export function UserDeviceTable({ data }: Readonly<{ data: UserDevice[] }>) {
   const [mounted, setMounted] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [total, setTotal] = useState(0);
-  const [data, setData] = useState<User[]>([]);
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnWidth, setColumnWidth] = useState<number[]>();
   const [pagination, setPagination] = useState({
     pageIndex: 0,
     pageSize: 10,
   });
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (mounted) {
@@ -138,23 +84,6 @@ export function DataTable() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  useEffect(() => {
-    const getData = async () => {
-      setLoading(true);
-      const totalTopics = await countAllUser();
-      const data = await getAllUser(
-        pagination.pageSize,
-        pagination.pageIndex,
-        sorting
-      );
-      setTotal(totalTopics);
-      setData([...data]);
-      setLoading(false);
-      setMounted(true);
-    };
-    getData();
-  }, [pagination.pageIndex, pagination.pageSize, sorting]);
-
   const table = useReactTable({
     data,
     columns,
@@ -162,14 +91,10 @@ export function DataTable() {
       sorting,
       pagination,
     },
-    getRowId: (row) => row.id.toString(),
     enableRowSelection: true,
     onSortingChange: setSorting,
     onPaginationChange: setPagination,
     getCoreRowModel: getCoreRowModel(),
-    manualPagination: true,
-    manualSorting: true,
-    rowCount: total,
   });
 
   return (
@@ -240,16 +165,7 @@ export function DataTable() {
             ))}
           </TableHeader>
           <TableBody className="**:data-[slot=table-cell]:first:w-8">
-            {loading ? (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center"
-                >
-                  <IconLoader2 className="animate-spin mx-auto" />
-                </TableCell>
-              </TableRow>
-            ) : table.getRowModel().rows?.length ? (
+            {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
                 <TableRow
                   key={row.id}

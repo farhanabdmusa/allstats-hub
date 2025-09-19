@@ -13,18 +13,28 @@ export async function getAllUser(pageSize?: number, page?: number, sort?: Sortin
     const users = await prisma.user.findMany({
         select: {
             id: true,
-            uuid: true,
             email: true,
-            last_session: true,
             sign_up_type_relation: {
                 select: {
                     name: true,
                 }
             },
+            user_device: {
+                select: {
+                    uuid: true,
+                    last_session: true,
+                }
+            }
         },
         orderBy: flatSort,
         take: pageSize,
         skip: page && pageSize ? page * pageSize : undefined,
     });
-    return users;
+
+    return users.map(user => ({
+        id: user.id,
+        email: user.email,
+        sign_up_type: user.sign_up_type_relation?.name,
+        user_device: user.user_device,
+    }));
 }
