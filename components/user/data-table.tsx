@@ -89,8 +89,7 @@ const columns: ColumnDef<User>[] = [
             <DialogHeader>
               <DialogTitle>User Device</DialogTitle>
               <DialogDescription>
-                Make changes to your profile here. Click save when you&apos;re
-                done.
+                List of devices used by {row.original.email || "N/A"}
               </DialogDescription>
             </DialogHeader>
             <UserDeviceTable data={row.original.user_device} />
