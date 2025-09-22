@@ -86,7 +86,6 @@ export async function POST(request: NextRequest) {
                             update: {
                                 lang: validatedData.data.lang ?? undefined,
                                 domain: validatedData.data.domain ?? undefined,
-                                topic_selection: validatedData.data.topic_selection ?? undefined,
                             }
                         }
                     },
