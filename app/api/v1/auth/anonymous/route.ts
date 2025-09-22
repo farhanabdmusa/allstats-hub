@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
                     uuid: validatedData.data.uuid
                 }
             });
-            if (user_device) {
+            if (user_device && user_device.id_user) {
                 const token = await createToken(user_device.id_user.toString(), validatedData.data.uuid);
                 const refreshToken = crypto.randomUUID();
                 const refreshTokenExpiresAt = new Date();
