@@ -9,7 +9,7 @@ const SECRET_KEY = new TextEncoder().encode(process.env.SIGNATURE_SECRET_KEY);
 export async function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl;
 
-    if (pathname == "/api/v1/auth/token") {
+    if (pathname == "/api/v1/auth/anonymous") {
         return NextResponse.next();
     }
 
