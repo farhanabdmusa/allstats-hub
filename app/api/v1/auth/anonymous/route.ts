@@ -46,6 +46,8 @@ export async function POST(request: NextRequest) {
             if (user_device) {
                 const token = await createToken(user_device.id_user.toString(), validatedData.data.uuid);
                 const refreshToken = crypto.randomUUID();
+                const refreshTokenExpiresAt = new Date();
+                refreshTokenExpiresAt.setDate(refreshTokenExpiresAt.getDate() + 30); // Set expiry 30 days from now
                 // Update user, user_device
                 const updatedUser = await tx.user.update({
                     where: {
@@ -76,6 +78,7 @@ export async function POST(request: NextRequest) {
                                     last_session: validatedData.data.last_session ?? undefined,
                                     access_token: token,
                                     refresh_token: refreshToken,
+                                    refresh_token_expires_at: refreshTokenExpiresAt,
                                 }
                             }
                         },
