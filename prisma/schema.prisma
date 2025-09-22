@@ -105,21 +105,22 @@ model user_topic {
 }
 
 model user_device {
-  id_user       Int
-  uuid          String   @db.VarChar
-  os            String?  @db.VarChar
-  manufacturer  String?  @db.VarChar
-  device_model  String?  @db.VarChar
-  os_version    String?  @db.VarChar
-  is_virtual    Boolean  @default(false)
-  new_version   Boolean  @default(true)
-  first_session DateTime @default(now()) @db.Timestamptz(6)
-  last_session  DateTime @default(now()) @db.Timestamptz(6)
-  last_ip       String?  @db.VarChar
-  access_token  String?  @db.VarChar
-  refresh_token String?  @db.VarChar
-  fcm_token     String?  @db.VarChar
-  user          user     @relation(fields: [id_user], references: [id], onDelete: Cascade, map: "user_device_user_fk")
+  id_user                  Int
+  uuid                     String    @db.VarChar
+  os                       String?   @db.VarChar
+  manufacturer             String?   @db.VarChar
+  device_model             String?   @db.VarChar
+  os_version               String?   @db.VarChar
+  is_virtual               Boolean   @default(false)
+  new_version              Boolean   @default(true)
+  first_session            DateTime  @default(now()) @db.Timestamptz(6)
+  last_session             DateTime  @default(now()) @db.Timestamptz(6)
+  last_ip                  String?   @db.VarChar
+  access_token             String?   @db.VarChar
+  refresh_token            String?   @db.VarChar
+  fcm_token                String?   @db.VarChar
+  refresh_token_expires_at DateTime? @db.Timestamptz(6)
+  user                     user      @relation(fields: [id_user], references: [id], onDelete: Cascade, map: "user_device_user_fk")
 
   @@id([id_user, uuid], map: "user_device_pk")
 }
