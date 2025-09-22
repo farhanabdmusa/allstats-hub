@@ -9,7 +9,7 @@ const SECRET_KEY = new TextEncoder().encode(process.env.SIGNATURE_SECRET_KEY);
 export async function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl;
 
-    if (pathname == "/api/v1/auth/anonymous") {
+    if (publicApiRoutes.includes(pathname)) {
         return NextResponse.next();
     }
 
@@ -58,3 +58,8 @@ export async function middleware(request: NextRequest) {
 export const config = {
     matcher: ['/api/:path*'],
 }
+
+const publicApiRoutes = [
+    '/api/v1/auth/anonymous',
+    '/api/v1/auth/refresh',
+];
