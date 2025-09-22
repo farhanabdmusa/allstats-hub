@@ -19,7 +19,7 @@ import createToken from "@/lib/create_token";
  */
 export async function POST(request: NextRequest) {
     try {
-        const { refresh_token } = await request.json();
+        const { refresh_token, uuid } = await request.json();
 
         if (!refresh_token) {
             return createApiResponse({
@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
         }
 
         const userDevice = await prisma.user_device.findFirst({
-            where: { refresh_token },
+            where: { refresh_token, uuid },
             select: {
                 id_user: true,
                 uuid: true,
