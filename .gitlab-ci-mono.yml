@@ -28,6 +28,7 @@ apply-kustomize:
   only:
     - main
     - development
+    - staging
 
 release:
   stage: release
