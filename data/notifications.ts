@@ -1,6 +1,7 @@
 "use server"
 
 import prisma from "@/lib/prisma";
+import { PushNotificationService } from "@/lib/send_push_notifications";
 import { Notification } from "@/types/notification";
 import { SortingState } from "@tanstack/react-table";
 
@@ -35,7 +36,10 @@ export async function createNotification(
 ) {
     try {
         const { topics, push_notification, ...rest } = data;
-        return await prisma.notification.create({
+        if (push_notification && (!data.short_description || data.short_description.length === 0)) {
+            throw new Error("Short description is required when push notification is enabled");
+        }
+        const create = await prisma.notification.create({
             select: { title: true },
             data: {
                 ...rest,
@@ -49,6 +53,26 @@ export async function createNotification(
                     : undefined
             },
         });
+
+        const listTokens = await prisma.user_device.findMany({
+            select: {
+                fcm_token: true
+            },
+            where: {
+                fcm_token: { not: null }
+            }
+        });
+        if (data.push_notification && listTokens.length > 0) {
+            PushNotificationService.sendNotificationMultiToken(
+                listTokens.map(user => user.fcm_token) as string[],
+                {
+                    title: data.title,
+                    body: data.short_description!,
+                }
+            );
+        }
+
+        return create;
     } catch (error) {
         console.error("Failed to create notification:", error);
         throw new Error("Failed to create notification");
@@ -94,5 +118,19 @@ export async function updateNotification(id: number, data: Omit<Notification, "i
     } catch (error) {
         console.log("🚀 ~ updateNotification ~ error:", error);
         throw new Error("Failed to update notification");
+    }
+}
+
+export async function deleteNotification(id: number) {
+    try {
+        await prisma.notification.delete({
+            where: { id },
+            select: { title: true },
+        });
+        return true;
+    } catch (error) {
+        console.log("🚀 ~ updateNotification ~ error:", error);
+        return false;
+        // throw new Error("Failed to update notification");
     }
 }

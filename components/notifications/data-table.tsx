@@ -36,11 +36,16 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Fragment, useEffect, useState } from "react";
-import { countNotifications, getNotifications } from "@/data/notifications";
+import {
+  countNotifications,
+  deleteNotification,
+  getNotifications,
+} from "@/data/notifications";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -61,6 +66,7 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
+import { toast } from "sonner";
 
 const columns: ColumnDef<Notification>[] = [
   {
@@ -202,7 +208,56 @@ const columns: ColumnDef<Notification>[] = [
           </DropdownMenuItem>
           <DropdownMenuItem>Make a copy</DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem variant="destructive">Delete</DropdownMenuItem>
+          <Dialog key={`delete-${row.original.id}`}>
+            <DialogTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-destructive hover:text-destructive w-full justify-start"
+              >
+                Delete
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Delete Notification</DialogTitle>
+                <hr />
+                <DialogDescription className="text-gray-800">
+                  Are you sure you want to delete this notification? This action
+                  cannot be undone.
+                </DialogDescription>
+                <DialogFooter>
+                  <Button variant="outline">Cancel</Button>
+                  <Button
+                    variant="destructive"
+                    onClick={async () => {
+                      const toastID = toast.loading(
+                        "Deleting notification...",
+                        {
+                          position: "top-center",
+                        }
+                      );
+                      const result = await deleteNotification(row.original.id);
+                      if (result) {
+                        toast.success("Notification deleted successfully", {
+                          id: toastID,
+                          position: "top-center",
+                        });
+                        window.location.reload();
+                      } else {
+                        toast.error("Failed to delete notification", {
+                          id: toastID,
+                          position: "top-center",
+                        });
+                      }
+                    }}
+                  >
+                    Delete
+                  </Button>
+                </DialogFooter>
+              </DialogHeader>
+            </DialogContent>
+          </Dialog>
         </DropdownMenuContent>
       </DropdownMenu>
     ),

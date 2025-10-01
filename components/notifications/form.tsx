@@ -28,6 +28,7 @@ import { Topic } from "@/types/topic";
 import { Notification } from "@/types/notification";
 import TopicSelect from "./form/topic";
 import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
 
 const Editor = dynamic(() => import("@/components/blocks/editor-x/editor"), {
   ssr: false,
@@ -39,6 +40,7 @@ const formSchema = z.object({
   content: z.string(),
   topics: z.array(z.number()).optional(),
   push_notification: z.boolean(),
+  short_description: z.string().min(0).max(100).optional(),
 });
 
 const NotificationForm = ({
@@ -61,6 +63,7 @@ const NotificationForm = ({
       topics:
         data?.notification_topic?.map((topic) => topic.topic.id) ?? undefined,
       push_notification: data?.push_notification ?? false,
+      short_description: data?.short_description ?? undefined,
     },
   });
 
@@ -197,6 +200,28 @@ const NotificationForm = ({
                     }}
                   />
                 </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
+        {form.watch("push_notification") && (
+          <FormField
+            control={form.control}
+            name="short_description"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Short Description</FormLabel>
+                <FormControl>
+                  <Textarea
+                    placeholder="Short Description"
+                    {...field}
+                    maxLength={100}
+                  />
+                </FormControl>
+                <p className="text-right text-sm text-muted-foreground mt-1">
+                  {field.value?.length ?? 0}/100
+                </p>
                 <FormMessage />
               </FormItem>
             )}
