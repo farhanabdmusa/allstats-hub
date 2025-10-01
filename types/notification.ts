@@ -8,4 +8,5 @@ export interface Notification {
     push_notification: boolean;
     timestamp: Date;
     notification_sent?: Date;
+    short_description?: string;
 };
