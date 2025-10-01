@@ -18,6 +18,8 @@ export async function getNotifications(pageSize: number, page: number, sort: Sor
             content: true,
             push_notification: true,
             timestamp: true,
+            notification_sent: true,
+            short_description: true,
             notification_topic: {
                 select: {
                     topic: true
@@ -40,7 +42,7 @@ export async function createNotification(
             throw new Error("Short description is required when push notification is enabled");
         }
         const create = await prisma.notification.create({
-            select: { title: true },
+            select: { id: true, title: true },
             data: {
                 ...rest,
                 push_notification,
@@ -63,16 +65,26 @@ export async function createNotification(
             }
         });
         if (data.push_notification && listTokens.length > 0) {
-            PushNotificationService.sendNotificationMultiToken(
+            const send = await PushNotificationService.sendNotificationMultiToken(
                 listTokens.map(user => user.fcm_token) as string[],
                 {
                     title: data.title,
                     body: data.short_description!,
                 }
             );
+            if (send) {
+                await prisma.notification.update({
+                    where: { id: create.id },
+                    data: {
+                        notification_sent: new Date()
+                    }
+                });
+            }
         }
 
-        return create;
+        return {
+            title: create.title,
+        };
     } catch (error) {
         console.error("Failed to create notification:", error);
         throw new Error("Failed to create notification");

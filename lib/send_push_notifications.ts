@@ -12,7 +12,7 @@ export class PushNotificationService {
     static async sendNotificationMultiToken(
         listToken: string[],
         payload: PushNotificationPayload,
-    ): Promise<void> {
+    ): Promise<boolean> {
         const message: MulticastMessage = {
             tokens: listToken,
             notification: {
@@ -41,6 +41,7 @@ export class PushNotificationService {
                 console.warn('Some tokens failed to receive the notification:', failedTokens);
             }
             console.log('Push notification sent successfully:', response);
+            return true;
         } catch (error) {
             console.error('Failed to send push notification:', error);
             throw error;

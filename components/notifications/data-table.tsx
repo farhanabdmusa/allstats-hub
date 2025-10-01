@@ -179,7 +179,7 @@ const columns: ColumnDef<Notification>[] = [
     cell: ({ row }) => {
       const notification_sent = row.original.notification_sent;
       if (!notification_sent) return null;
-      notification_sent.toLocaleString("en-US", {
+      return notification_sent.toLocaleString("en-US", {
         dateStyle: "long",
         timeStyle: "medium",
       });

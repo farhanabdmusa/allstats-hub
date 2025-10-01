@@ -7,6 +7,6 @@ export interface Notification {
     notification_topic?: { topic: Topic }[];
     push_notification: boolean;
     timestamp: Date;
-    notification_sent?: Date;
-    short_description?: string;
+    notification_sent?: Date | null;
+    short_description?: string | null;
 };
