@@ -24,7 +24,7 @@ image-build:
     - buildah login -u ${SHARED_REGISTRY_USER} --password ${SHARED_REGISTRY_PASSWORD} ${SHARED_REGISTRY}
   script:
     - echo "Building ${CI_REGISTRY_IMAGE}"
-    - buildah bud --tag ${CI_REGISTRY_IMAGE} --pull=newer
+    - buildah bud --tag ${CI_REGISTRY_IMAGE} --pull=newer ${KODERIA_BUILD_ARGS}
     - echo "Pushing ${CI_REGISTRY_IMAGE}"
     - buildah push ${CI_REGISTRY_IMAGE}
 
