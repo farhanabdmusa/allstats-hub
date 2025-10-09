@@ -24,9 +24,7 @@ image-build:
     - buildah login -u ${SHARED_REGISTRY_USER} --password ${SHARED_REGISTRY_PASSWORD} ${SHARED_REGISTRY}
   script:
     - echo "Building ${CI_REGISTRY_IMAGE}"
-    - printenv | grep -vE '^(CI_|GITLAB_|DOCKER_|HOME=|PATH=|PWD=|SHLVL=|HOSTNAME=)' > env.list
-    - export BUILD_ARGS=$(awk -F= '{print "--build-arg " $1"="$2}' env.list | xargs)
-    - buildah bud $BUILD_ARGS --tag ${CI_REGISTRY_IMAGE} --pull=newer
+    - buildah bud --tag ${CI_REGISTRY_IMAGE} --pull=newer
     - echo "Pushing ${CI_REGISTRY_IMAGE}"
     - buildah push ${CI_REGISTRY_IMAGE}
 
