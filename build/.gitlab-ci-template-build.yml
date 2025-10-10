@@ -44,7 +44,7 @@
         echo "Build caching is enabled."
         CACHE_FLAGS="--cache-to ${CI_REGISTRY_IMAGE}/cache --cache-from ${CI_REGISTRY_IMAGE}/cache --layers"
       fi
-    - buildah bud --tag ${IMAGE_TAG} ${CACHE_FLAGS} --pull=newer --file Dockerfile.bps
+    - buildah bud --tag ${IMAGE_TAG} ${CACHE_FLAGS} --pull=newer --file Dockerfile.bps ${KODERIA_BUILD_ARGS}
     - echo "Pushing $IMAGE_TAG"
     - buildah push ${IMAGE_TAG}
 
@@ -60,6 +60,6 @@
     - docker login --username "$CI_REGISTRY_USER" --password "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
   script:
     - echo "Building $IMAGE_TAG"
-    - docker build -t $IMAGE_TAG . --file Dockerfile.bps
+    - docker build -t $IMAGE_TAG . --file Dockerfile.bps ${KODERIA_BUILD_ARGS}
     - echo "Pushing $IMAGE_TAG"
     - docker push ${IMAGE_TAG}
