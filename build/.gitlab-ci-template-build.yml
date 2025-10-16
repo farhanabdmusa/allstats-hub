@@ -29,7 +29,7 @@
 .build-buildah-image:
   rules:
     - !reference [.valid-branch, rules]
-  image: registry.bps.go.id/cache/containers/aio
+  image: registry.bps.go.id/factory/aio-tools
   dependencies:
     - get-version
   before_script:

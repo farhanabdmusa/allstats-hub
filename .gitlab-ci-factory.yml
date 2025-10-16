@@ -16,7 +16,7 @@ image-build:
   stage: build
   rules:
     - !reference [.valid-branch, rules]
-  image: registry.bps.go.id/cache/containers/aio
+  image: registry.bps.go.id/factory/aio-tools
   before_script:
     - echo "Logging into Gitlab Container Registry"
     - buildah login -u ${CI_REGISTRY_USER} --password ${CI_REGISTRY_PASSWORD} ${CI_REGISTRY}
@@ -38,7 +38,7 @@ container_scanning:
 image-publish:
   rules:
     - !reference [.valid-branch, rules]
-  image: registry.bps.go.id/cache/containers/aio
+  image: registry.bps.go.id/factory/aio-tools
   stage: publish
   before_script:
     - echo "Login into Gitlab Container Registry"
