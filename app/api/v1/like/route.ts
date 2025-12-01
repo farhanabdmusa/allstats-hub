@@ -104,36 +104,65 @@ const unlike = ({
 };
 
 export async function GET(request: NextRequest) {
-  const searchParams = request.nextUrl.searchParams;
-  const product_id = searchParams.get("product_id");
-  const mfd = searchParams.get("mfd");
-  const product_type = Number(searchParams.get("product_type"));
+  try {
+    const authHeader = request.headers.get("authorization");
+    const token = authHeader?.split(" ")[1];
+    const jwt = await jwtVerify(token!, SECRET_KEY, {
+      audience: AUDIENCE,
+    });
 
-  const validatedData = GetLikeSchema.safeParse({
-    product_id,
-    product_type,
-    mfd,
-  });
+    const searchParams = request.nextUrl.searchParams;
+    const product_id = searchParams.get("product_id");
+    const mfd = searchParams.get("mfd");
+    const product_type = Number(searchParams.get("product_type"));
 
-  if (!validatedData.success) {
+    const validatedData = GetLikeSchema.safeParse({
+      product_id,
+      product_type,
+      mfd,
+    });
+
+    if (!validatedData.success) {
+      return createApiResponse({
+        status: false,
+        statusCode: 422,
+        zodError: z.treeifyError(validatedData.error),
+      });
+    }
+
+    const result = await prisma.like_counter.findUnique({
+      where: {
+        mfd_product_type_product_id: validatedData.data,
+      },
+    });
+
+    const isLiked = await prisma.user_like_product.findFirst({
+      select: {
+        id: true,
+      },
+      where: {
+        mfd: validatedData.data.mfd,
+        product_id: validatedData.data.product_id,
+        product_type: validatedData.data.product_type,
+        user_id: Number(jwt.payload.sub),
+      },
+    });
+
+    return createApiResponse({
+      status: true,
+      data: {
+        total: result?.total ?? 0,
+        type: isLiked != null ? "like" : "unlike",
+      },
+    });
+  } catch (error) {
+    console.log("🚀 ~ GET /api/v1/like ~ error:", error);
     return createApiResponse({
       status: false,
-      statusCode: 422,
-      zodError: z.treeifyError(validatedData.error),
+      message: "Internal Server Error",
+      statusCode: 500,
     });
   }
-
-  const result = await prisma.like_counter.findUnique({
-    where: {
-      mfd_product_type_product_id: validatedData.data,
-    },
-  });
-  return createApiResponse({
-    status: true,
-    data: {
-      total: result?.total ?? 0,
-    },
-  });
 }
 
 export async function POST(request: NextRequest) {
