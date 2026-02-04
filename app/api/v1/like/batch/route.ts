@@ -18,7 +18,9 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const product_id = searchParams.getAll("product_id[]");
     const mfd = searchParams.get("mfd");
-    const product_type = Number(searchParams.get("product_type"));
+    const product_type = searchParams.get("product_type")
+      ? Number(searchParams.get("product_type"))
+      : undefined;
 
     const validatedData = GetLikeSchemaBatch.safeParse({
       product_id,

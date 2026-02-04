@@ -7,7 +7,9 @@ const GetLikeSchema = z.object({
 });
 
 export const GetLikeSchemaBatch = z.object({
-  product_id: z.string().array(),
+  product_id: z.string().array().min(1, {
+    error: "Input Error: The product ID list cannot be empty.",
+  }),
   product_type: z.int(),
   mfd: z.string(),
 });
