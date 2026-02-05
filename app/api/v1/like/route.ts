@@ -3,6 +3,7 @@ import createApiResponse from "@/lib/create_api_response";
 import prisma from "@/lib/prisma";
 import GetLikeSchema from "@/zod/get_like_schema";
 import LikeSchema from "@/zod/like_schema";
+import { Prisma } from "@prisma/client";
 import { jwtVerify } from "jose";
 import type { NextRequest } from "next/server";
 import z from "zod";
@@ -18,64 +19,57 @@ const like = async ({
   product_id: string;
   mfd: string;
 }): Promise<number> => {
-  const check = await prisma.user_like_product.findUnique({
-    where: {
-      user_id_mfd_product_type_product_id: {
-        product_id,
-        product_type,
-        user_id,
-        mfd,
-      },
-    },
-  });
-  if (check != null) {
-    const total = await prisma.like_counter.findFirst({
-      select: {
-        total: true,
-      },
-      where: {
-        product_id,
-        product_type,
-        mfd,
-      },
-    });
+  try {
+    return await prisma.$transaction(async (tx) => {
+      await tx.user_like_product.create({
+        data: {
+          product_id,
+          product_type,
+          user_id,
+          mfd,
+        },
+      });
 
-    return total?.total ?? 0;
-  }
-  return await prisma.$transaction(async (tx) => {
-    await tx.user_like_product.create({
-      data: {
-        product_id,
-        product_type,
-        user_id,
-        mfd,
-      },
-    });
-
-    const total = await tx.like_counter.upsert({
-      select: {
-        total: true,
-      },
-      where: {
-        mfd_product_type_product_id: {
+      const total = await tx.like_counter.upsert({
+        select: {
+          total: true,
+        },
+        where: {
+          mfd_product_type_product_id: {
+            product_id,
+            product_type,
+            mfd,
+          },
+        },
+        create: {
           product_id,
           product_type,
           mfd,
+          total: 1,
         },
-      },
-      create: {
-        product_id,
-        product_type,
-        mfd,
-        total: 1,
-      },
-      update: {
-        total: { increment: 1 },
-      },
-    });
+        update: {
+          total: { increment: 1 },
+        },
+      });
 
-    return total.total;
-  });
+      return total.total;
+    });
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error.code == "P2002") {
+        const current = await prisma.like_counter.findFirst({
+          where: {
+            product_id,
+            product_type,
+            mfd,
+          },
+        });
+
+        return current?.total ?? 0;
+      }
+    }
+    throw error;
+  }
 };
 
 const unlike = async ({
@@ -89,67 +83,59 @@ const unlike = async ({
   product_id: string;
   mfd: string;
 }): Promise<number> => {
-  const check = await prisma.user_like_product.findUnique({
-    where: {
-      user_id_mfd_product_type_product_id: {
-        product_id,
-        product_type,
-        user_id,
-        mfd,
-      },
-    },
-  });
-  if (check == null) {
-    const total = await prisma.like_counter.findFirst({
-      select: {
-        total: true,
-      },
-      where: {
-        product_id,
-        product_type,
-        mfd,
-      },
-    });
+  try {
+    return await prisma.$transaction(async (tx) => {
+      await tx.user_like_product.delete({
+        where: {
+          user_id_mfd_product_type_product_id: {
+            product_id,
+            product_type,
+            mfd,
+            user_id,
+          },
+        },
+      });
 
-    return total?.total ?? 0;
+      const total = await tx.like_counter.upsert({
+        select: {
+          total: true,
+        },
+        where: {
+          mfd_product_type_product_id: {
+            product_id,
+            product_type,
+            mfd,
+          },
+        },
+        create: {
+          product_id,
+          product_type,
+          mfd,
+          total: 0,
+        },
+        update: {
+          total: { decrement: 1 },
+        },
+      });
+
+      return total.total;
+    });
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error.code == "P2025") {
+        const current = await prisma.like_counter.findFirst({
+          where: {
+            product_id,
+            product_type,
+            mfd,
+          },
+        });
+
+        return current?.total ?? 0;
+      }
+    }
+    throw error;
   }
-
-  return await prisma.$transaction(async (tx) => {
-    await tx.user_like_product.delete({
-      where: {
-        user_id_mfd_product_type_product_id: {
-          product_id,
-          product_type,
-          mfd,
-          user_id,
-        },
-      },
-    });
-
-    const total = await tx.like_counter.upsert({
-      select: {
-        total: true,
-      },
-      where: {
-        mfd_product_type_product_id: {
-          product_id,
-          product_type,
-          mfd,
-        },
-      },
-      create: {
-        product_id,
-        product_type,
-        mfd,
-        total: 0,
-      },
-      update: {
-        total: { decrement: 1 },
-      },
-    });
-
-    return total.total;
-  });
 };
 
 export async function GET(request: NextRequest) {
@@ -234,20 +220,15 @@ export async function POST(request: NextRequest) {
         zodError: errors,
       });
     }
-    const check = await prisma.user_like_product.findUnique({
-      where: {
-        user_id_mfd_product_type_product_id: validatedData.data,
-      },
-    });
-    const result =
-      check == null
-        ? await like(validatedData.data)
-        : await unlike(validatedData.data);
+
+    const result = validatedData.data.like_status
+      ? await like(validatedData.data)
+      : await unlike(validatedData.data);
 
     return createApiResponse({
       status: true,
       data: {
-        type: check == null ? "like" : "unlike",
+        type: validatedData.data.like_status ? "like" : "unlike",
         total: result,
       },
     });
