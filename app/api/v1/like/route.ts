@@ -7,7 +7,7 @@ import { jwtVerify } from "jose";
 import type { NextRequest } from "next/server";
 import z from "zod";
 
-const like = ({
+const like = async ({
   product_id,
   product_type,
   user_id,
@@ -17,8 +17,32 @@ const like = ({
   product_type: number;
   product_id: string;
   mfd: string;
-}) => {
-  return prisma.$transaction(async (tx) => {
+}): Promise<number> => {
+  const check = await prisma.user_like_product.findUnique({
+    where: {
+      user_id_mfd_product_type_product_id: {
+        product_id,
+        product_type,
+        user_id,
+        mfd,
+      },
+    },
+  });
+  if (check != null) {
+    const total = await prisma.like_counter.findFirst({
+      select: {
+        total: true,
+      },
+      where: {
+        product_id,
+        product_type,
+        mfd,
+      },
+    });
+
+    return total?.total ?? 0;
+  }
+  return await prisma.$transaction(async (tx) => {
     await tx.user_like_product.create({
       data: {
         product_id,
@@ -54,7 +78,7 @@ const like = ({
   });
 };
 
-const unlike = ({
+const unlike = async ({
   product_id,
   product_type,
   user_id,
@@ -64,8 +88,33 @@ const unlike = ({
   product_type: number;
   product_id: string;
   mfd: string;
-}) => {
-  return prisma.$transaction(async (tx) => {
+}): Promise<number> => {
+  const check = await prisma.user_like_product.findUnique({
+    where: {
+      user_id_mfd_product_type_product_id: {
+        product_id,
+        product_type,
+        user_id,
+        mfd,
+      },
+    },
+  });
+  if (check == null) {
+    const total = await prisma.like_counter.findFirst({
+      select: {
+        total: true,
+      },
+      where: {
+        product_id,
+        product_type,
+        mfd,
+      },
+    });
+
+    return total?.total ?? 0;
+  }
+
+  return await prisma.$transaction(async (tx) => {
     await tx.user_like_product.delete({
       where: {
         user_id_mfd_product_type_product_id: {
