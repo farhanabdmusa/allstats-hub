@@ -17,9 +17,8 @@
     name: registry.bps.go.id/factory/oc-kustomize
     entrypoint: [""]
   before_script:
-    - |
-      oc login --server=${K8S_CLUSTER} --token=${K8S_TOKEN}
-      oc project "$K8S_NS"
+    - oc login --server=${K8S_CLUSTER} --token=${K8S_TOKEN}
+    - oc project ${K8S_NS}
     - oc whoami
   script:
     - kustomize version
@@ -41,7 +40,7 @@
   variables:
     CI_SERVER_URL: https://$CI_SERVER_HOST
   script:
-    - echo "running release_job for $VERSION"
+    - echo "running release_job for ${VERSION}"
   release:                                         # See https://docs.gitlab.com/ee/ci/yaml/#release for available properties
     tag_name: 'v$VERSION'
     name: 'Release v$VERSION'
