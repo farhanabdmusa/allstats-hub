@@ -18,10 +18,10 @@ const like = async ({
   product_type: number;
   product_id: string;
   mfd: string;
-}): Promise<number> => {
+}): Promise<{ total: number; timestamp?: Date }> => {
   try {
     return await prisma.$transaction(async (tx) => {
-      await tx.user_like_product.create({
+      const userLike = await tx.user_like_product.create({
         data: {
           product_id,
           product_type,
@@ -30,7 +30,7 @@ const like = async ({
         },
       });
 
-      const total = await tx.like_counter.upsert({
+      const totalLikes = await tx.like_counter.upsert({
         select: {
           total: true,
         },
@@ -52,7 +52,10 @@ const like = async ({
         },
       });
 
-      return total.total;
+      return {
+        total: totalLikes.total,
+        timestamp: userLike.timestamp,
+      };
     });
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
@@ -65,7 +68,21 @@ const like = async ({
           },
         });
 
-        return current?.total ?? 0;
+        const userLike = await prisma.user_like_product.findUnique({
+          where: {
+            user_id_mfd_product_type_product_id: {
+              mfd,
+              product_id,
+              product_type,
+              user_id,
+            },
+          },
+        });
+
+        return {
+          total: current?.total ?? 0,
+          timestamp: userLike?.timestamp,
+        };
       }
     }
     throw error;
@@ -174,6 +191,7 @@ export async function GET(request: NextRequest) {
     const isLiked = await prisma.user_like_product.findFirst({
       select: {
         id: true,
+        timestamp: true,
       },
       where: {
         mfd: validatedData.data.mfd,
@@ -188,6 +206,7 @@ export async function GET(request: NextRequest) {
       data: {
         total: result?.total ?? 0,
         type: isLiked != null ? "like" : "unlike",
+        timestamp: isLiked?.timestamp ?? null,
       },
     });
   } catch (error) {
@@ -221,15 +240,23 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    const result = validatedData.data.like_status
-      ? await like(validatedData.data)
-      : await unlike(validatedData.data);
+    let totalLikes = 0;
+    let timestamp;
+
+    if (validatedData.data.like_status) {
+      const likeResult = await like(validatedData.data);
+      totalLikes = likeResult.total;
+      timestamp = likeResult.timestamp;
+    } else {
+      totalLikes = await unlike(validatedData.data);
+    }
 
     return createApiResponse({
       status: true,
       data: {
         type: validatedData.data.like_status ? "like" : "unlike",
-        total: result,
+        total: totalLikes,
+        timestamp: timestamp ?? null,
       },
     });
   } catch (error) {
