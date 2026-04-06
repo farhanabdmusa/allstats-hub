@@ -29,6 +29,7 @@ apply-kustomize:
     - main
     - development
     - staging
+    - dev-to-prod-trial
 
 release:
   stage: release
