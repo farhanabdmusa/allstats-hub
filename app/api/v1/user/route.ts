@@ -173,9 +173,16 @@ export async function PUT(request: NextRequest) {
       });
     }
 
-    const updatedData = prisma.user.update({
+    const updatedData = await prisma.user.update({
       omit: {
         id: true,
+      },
+      include: {
+        user_preference: {
+          select: {
+            lang: true,
+          },
+        },
       },
       where: {
         id: userId,
