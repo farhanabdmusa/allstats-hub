@@ -163,7 +163,7 @@ export async function PUT(request: NextRequest) {
       user_id: userId,
       last_ip: last_ip,
     });
-    console.log("🚀 ~ PUT ~ validatedData:", validatedData);
+
     if (!validatedData.success) {
       const errors = z.treeifyError(validatedData.error);
       console.log("🚀 ~ PUT ~ errors:", errors);
@@ -173,16 +173,9 @@ export async function PUT(request: NextRequest) {
       });
     }
 
-    const updatedData = await prisma.user.update({
+    await prisma.user.update({
       omit: {
         id: true,
-      },
-      include: {
-        user_preference: {
-          select: {
-            lang: true,
-          },
-        },
       },
       where: {
         id: userId,
@@ -235,7 +228,6 @@ export async function PUT(request: NextRequest) {
         },
       },
     });
-    console.log("🚀 ~ PUT ~ updatedData:", updatedData);
 
     const data = {
       ...validatedData.data,
