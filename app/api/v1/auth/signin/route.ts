@@ -1,32 +1,28 @@
-import { ALLOWED_ORIGIN, APP_KEY } from "@/constants/v1/api";
+import { AUDIENCE, SECRET_KEY } from "@/constants/v1/api";
 import createApiResponse from "@/lib/create_api_response";
 import prisma from "@/lib/prisma";
 import { SignInPayload } from "@/zod/user_schema";
-import { ipAddress } from "@vercel/functions";
+import { jwtVerify } from "jose";
 import { NextRequest } from "next/server";
 import z from "zod";
 
 export async function POST(request: NextRequest) {
   try {
-    const authHeader = request.headers.get("Authorization");
-    const authToken = authHeader?.split(" ")[1];
-    const userAgent = request.headers.get("User-Agent");
+    const authHeader = request.headers.get("authorization");
+    const token = authHeader?.split(" ")[1];
+    const jwt = await jwtVerify(token!, SECRET_KEY, { audience: AUDIENCE });
 
-    if (authToken != APP_KEY && userAgent != ALLOWED_ORIGIN) {
-      console.error(
-        "🚀 ~ POST /api/v1/signin:",
-        `${authToken}: ${APP_KEY} -- ${userAgent}: ${ALLOWED_ORIGIN}`,
-      );
+    const userId = Number(jwt.payload.sub!);
+
+    if (Number.isNaN(userId)) {
       return createApiResponse({
         status: false,
-        message: "Unauthorized",
-        statusCode: 401,
+        message: "User not found",
+        statusCode: 404,
       });
     }
 
     const formData = await request.json();
-    const last_ip = ipAddress(request);
-    formData["last_ip"] = last_ip;
 
     const validatedData = SignInPayload.safeParse(formData);
     if (!validatedData.success) {
