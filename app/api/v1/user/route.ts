@@ -95,8 +95,9 @@ export async function GET(request: NextRequest) {
     });
 
     const data = {
-      email: updatedUser.email,
-      sign_up_type: updatedUser.sign_up_type,
+      email_apple: updatedUser.email_apple,
+      email_pst: updatedUser.email_pst,
+      email_google: updatedUser.email_google,
       name: updatedUser.name,
       domain: updatedUser.user_preference?.domain,
       lang: updatedUser.user_preference?.lang,
@@ -216,8 +217,7 @@ export async function PUT(request: NextRequest) {
             },
           },
         },
-        email: validatedData.data.email ?? undefined,
-        sign_up_type: validatedData.data.sign_up_type ?? undefined,
+
         name: validatedData.data.name ?? undefined,
         user_preference: {
           update: {

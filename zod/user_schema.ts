@@ -2,7 +2,6 @@ import { z } from "zod";
 
 const UserSchema = z.object({
   uuid: z.string("UUID is required"),
-  email: z.email().optional().nullable(),
   name: z.string().optional().nullable(),
   manufacturer: z.string().optional().nullable(),
   device_model: z.string().optional(),
@@ -23,7 +22,6 @@ const UserSchema = z.object({
 const UpdateUserPayload = UserSchema.extend({
   name: z.string().optional().nullable(),
   uuid: z.string().optional().nullable(),
-  email: z.email().optional().nullable(),
   manufacturer: z.string().optional().nullable(),
   device_model: z.string().optional().nullable(),
   os: z.string().optional().nullable(),
