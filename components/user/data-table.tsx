@@ -84,7 +84,7 @@ const columns: ColumnDef<User>[] = [
               Show {row.original.user_device.length} Device
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[80vw]">
+          <DialogContent className="sm:max-w-[80vw] translate-y-0 top-16">
             <DialogHeader>
               <DialogTitle>User Device</DialogTitle>
               <DialogDescription>
