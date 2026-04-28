@@ -65,14 +65,13 @@ const columns: ColumnDef<User>[] = [
     accessorKey: "email",
     header: "Email",
     enableSorting: true,
-    cell: ({ row }) => row.getValue("email") || "N/A",
+    cell: ({ row }) =>
+      row.original.email_pst ??
+      row.original.email_apple ??
+      row.original.email_google ??
+      "N/A",
   },
-  {
-    accessorKey: "sign_up_type",
-    header: "Sign Up Type",
-    enableSorting: true,
-    cell: ({ row }) => row.getValue("sign_up_type") || "N/A",
-  },
+
   {
     accessorKey: "user_device",
     header: "User Devices",

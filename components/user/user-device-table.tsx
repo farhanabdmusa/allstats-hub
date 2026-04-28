@@ -44,6 +44,11 @@ const columns: ColumnDef<UserDevice>[] = [
     enableSorting: true,
   },
   {
+    accessorKey: "sign_in_type",
+    header: "Last Sign In With",
+    enableSorting: true,
+  },
+  {
     accessorKey: "last_session",
     header: "Last Session",
     enableSorting: true,
@@ -112,7 +117,7 @@ export function UserDeviceTable({ data }: Readonly<{ data: UserDevice[] }>) {
                       className={cn(
                         header.column.getCanSort()
                           ? "cursor-pointer select-none"
-                          : ""
+                          : "",
                       )}
                       onClick={
                         header.column.getCanSort()
@@ -129,7 +134,7 @@ export function UserDeviceTable({ data }: Readonly<{ data: UserDevice[] }>) {
                           ? null
                           : flexRender(
                               header.column.columnDef.header,
-                              header.getContext()
+                              header.getContext(),
                             )}
                         {header.column.getCanSort() ? (
                           <div className="relative w-[14px] h-[14px]">
@@ -142,7 +147,7 @@ export function UserDeviceTable({ data }: Readonly<{ data: UserDevice[] }>) {
                                     header.column.getIsSorted() === "asc",
                                   "opacity-100":
                                     header.column.getIsSorted() != false,
-                                }
+                                },
                               )}
                             />
                             <IconArrowsUpDown
@@ -152,7 +157,7 @@ export function UserDeviceTable({ data }: Readonly<{ data: UserDevice[] }>) {
                                 {
                                   "rotate-180 opacity-100 text-gray-300":
                                     header.column.getIsSorted() == false,
-                                }
+                                },
                               )}
                             />
                           </div>
@@ -176,7 +181,7 @@ export function UserDeviceTable({ data }: Readonly<{ data: UserDevice[] }>) {
                     <TableCell key={cell.id}>
                       {flexRender(
                         cell.column.columnDef.cell,
-                        cell.getContext()
+                        cell.getContext(),
                       )}
                     </TableCell>
                   ))}
@@ -200,7 +205,7 @@ export function UserDeviceTable({ data }: Readonly<{ data: UserDevice[] }>) {
           Showing {pagination.pageIndex * pagination.pageSize + 1} -{" "}
           {Math.min(
             (pagination.pageIndex + 1) * pagination.pageSize,
-            table.getFilteredRowModel().rows.length
+            table.getFilteredRowModel().rows.length,
           )}{" "}
           of {table.getFilteredRowModel().rows.length} results
         </div>
