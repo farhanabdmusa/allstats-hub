@@ -45,7 +45,7 @@ const SignInPayload = z.object({
   uuid: z.string("UUID is required"),
   name: z.string(),
   email: z.email(),
-  sign_up_type: z.number().min(1).max(3),
+  sign_in_type: z.number().min(1).max(3),
 });
 
 export default UserSchema;

@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
       console.log("🚀 ~ POST /api/v1/signin:", errors.properties);
       return createApiResponse({
         status: false,
-        zodError: errors,
+        zodError: errors.properties,
       });
     }
 
@@ -61,14 +61,31 @@ export async function POST(request: NextRequest) {
           id: id_user,
         },
         data: {
-          email: user_data.email,
+          email_pst: user_data.sign_in_type == 1 ? user_data.email : undefined,
+          email_google:
+            user_data.sign_in_type == 2 ? user_data.email : undefined,
+          email_apple:
+            user_data.sign_in_type == 3 ? user_data.email : undefined,
           name: user_data.name,
-          sign_up_type: user_data.sign_up_type,
+          user_device: {
+            update: {
+              where: {
+                id_user_uuid: {
+                  id_user: id_user,
+                  uuid: user_data.uuid,
+                },
+              },
+              data: {
+                sign_in_type: user_data.sign_in_type,
+              },
+            },
+          },
         },
         select: {
-          email: true,
+          email_pst: true,
+          email_google: true,
+          email_apple: true,
           name: true,
-          sign_up_type: true,
         },
       });
     });
