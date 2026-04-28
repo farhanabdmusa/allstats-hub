@@ -1,12 +1,13 @@
-
 export interface User {
-    id: number;
-    email: string | null;
-    sign_up_type: string | undefined;
-    user_device: UserDevice[];
+  id: number;
+  email_pst: string | null;
+  email_apple: string | null;
+  email_google: string | null;
+  user_device: UserDevice[];
 }
 
 export interface UserDevice {
-    uuid: string;
-    last_session: Date;
+  uuid: string;
+  last_session: Date;
+  sign_in_type?: string | null;
 }
