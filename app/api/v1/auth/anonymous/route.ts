@@ -107,9 +107,6 @@ export async function POST(request: NextRequest) {
       } else {
         const user = await tx.user.create({
           data: {
-            name: validatedData.data.name,
-            email: validatedData.data.email,
-            sign_up_type: validatedData.data.sign_up_type,
             user_device: {
               create: {
                 uuid: validatedData.data.uuid,
