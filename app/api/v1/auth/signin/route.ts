@@ -1,5 +1,6 @@
 import { AUDIENCE, SECRET_KEY } from "@/constants/v1/api";
 import createApiResponse from "@/lib/create_api_response";
+import createToken from "@/lib/create_token";
 import prisma from "@/lib/prisma";
 import { SignInPayload } from "@/zod/user_schema";
 import { jwtVerify } from "jose";
@@ -53,10 +54,38 @@ export async function POST(request: NextRequest) {
         statusCode: 404,
       });
     }
+
     const id_user = user_device.id_user;
+    const newToken = await createToken(
+      user_device.id_user.toString(),
+      validatedData.data.uuid,
+      true,
+    );
+    const newRefreshToken = crypto.randomUUID();
+    const refreshTokenExpiresAt = new Date();
+    refreshTokenExpiresAt.setDate(refreshTokenExpiresAt.getDate() + 30); // Set expiry 30 days from now
 
     const update = await prisma.$transaction(async (tx) => {
-      return await tx.user.update({
+      const device = await tx.user_device.update({
+        where: {
+          id_user_uuid: {
+            id_user: id_user,
+            uuid: user_data.uuid,
+          },
+        },
+        data: {
+          access_token: newToken,
+          refresh_token: newRefreshToken,
+          refresh_token_expires_at: refreshTokenExpiresAt,
+          sign_in_type: user_data.sign_in_type,
+        },
+        select: {
+          access_token: true,
+          refresh_token: true,
+        },
+      });
+
+      const user = await tx.user.update({
         where: {
           id: id_user,
         },
@@ -67,32 +96,29 @@ export async function POST(request: NextRequest) {
           email_apple:
             user_data.sign_in_type == 3 ? user_data.email : undefined,
           name: user_data.name,
-          user_device: {
-            update: {
-              where: {
-                id_user_uuid: {
-                  id_user: id_user,
-                  uuid: user_data.uuid,
-                },
-              },
-              data: {
-                sign_in_type: user_data.sign_in_type,
-              },
-            },
-          },
-        },
-        select: {
-          email_pst: true,
-          email_google: true,
-          email_apple: true,
-          name: true,
         },
       });
+
+      return {
+        name: user.name,
+        email_pst: user.email_pst,
+        email_apple: user.email_apple,
+        email_google: user.email_google,
+        access_token: device.access_token,
+        refresh_token: device.refresh_token,
+      };
     });
 
     return createApiResponse({
       status: true,
-      data: update,
+      data: {
+        name: update.name,
+        email_pst: update.email_pst,
+        email_apple: update.email_apple,
+        email_google: update.email_google,
+        access_token: update.access_token,
+        refresh_token: update.refresh_token,
+      },
     });
   } catch (error) {
     console.log("🚀 ~ POST /api/v1/signin:", error);
