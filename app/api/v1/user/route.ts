@@ -21,7 +21,16 @@ export async function GET(request: NextRequest) {
     const token = authHeader?.split(" ")[1];
     const jwt = await jwtVerify(token!, SECRET_KEY, { audience: AUDIENCE });
     const userId = Number(jwt.payload.sub!);
+    const role = jwt.payload.role;
     const uuid = jwt.payload.jti;
+
+    if (role != "user") {
+      return createApiResponse({
+        status: false,
+        message: "Unauthorized",
+        statusCode: 401,
+      });
+    }
 
     if (Number.isNaN(userId) || uuid === undefined) {
       return createApiResponse({
