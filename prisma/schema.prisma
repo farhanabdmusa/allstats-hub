@@ -15,10 +15,10 @@ model sign_up_type {
 
 model user {
   id                Int                 @id(map: "user_pk") @default(autoincrement())
-  email_pst         String?             @unique(map: "user_unique_email") @db.VarChar
+  email_pst         String?             @unique(map: "user_unique_email_pst") @db.VarChar
   name              String?             @db.VarChar
-  email_apple       String?             @db.VarChar
-  email_google      String?             @db.VarChar
+  email_apple       String?             @unique(map: "user_unique_email_apple") @db.VarChar
+  email_google      String?             @unique(map: "user_unique_email_google") @db.VarChar
   user_device       user_device[]
   user_like_product user_like_product[]
   user_preference   user_preference?
@@ -106,8 +106,8 @@ model user_topic {
 }
 
 model user_device {
-  id_user                  Int
-  uuid                     String        @db.VarChar
+  id_user                  Int?
+  uuid                     String        @id(map: "user_device_pk") @db.VarChar
   os                       String?       @db.VarChar
   manufacturer             String?       @db.VarChar
   device_model             String?       @db.VarChar
@@ -123,7 +123,5 @@ model user_device {
   refresh_token_expires_at DateTime?     @db.Timestamptz(6)
   sign_in_type             Int?
   sign_up_type             sign_up_type? @relation(fields: [sign_in_type], references: [id], map: "user_device_sign_up_type_fk")
-  user                     user          @relation(fields: [id_user], references: [id], onDelete: Cascade, map: "user_device_user_fk")
-
-  @@id([id_user, uuid], map: "user_device_pk")
+  user                     user?         @relation(fields: [id_user], references: [id], onDelete: Cascade, map: "user_device_user_fk")
 }
