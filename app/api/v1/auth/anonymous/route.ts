@@ -62,6 +62,7 @@ export async function POST(request: NextRequest) {
           access_token: token,
           refresh_token: refreshToken.token,
           refresh_token_expires_at: refreshToken.expiresAt,
+          sign_in_type: null,
         },
         update: {
           manufacturer: validatedData.data.manufacturer,
@@ -77,6 +78,7 @@ export async function POST(request: NextRequest) {
           access_token: token,
           refresh_token: refreshToken.token,
           refresh_token_expires_at: refreshToken.expiresAt,
+          sign_in_type: null,
         },
       });
       return {
