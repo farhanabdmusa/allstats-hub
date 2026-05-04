@@ -231,6 +231,16 @@ export async function POST(request: NextRequest) {
     const jwt = await jwtVerify(token!, SECRET_KEY, {
       audience: AUDIENCE,
     });
+    const { role } = jwt.payload;
+
+    const signedUser = role == "user";
+    if (!signedUser) {
+      return createApiResponse({
+        status: false,
+        statusCode: 403,
+        message: "Invalid User",
+      });
+    }
     const formData = await request.json();
 
     const validatedData = LikeSchema.safeParse({
