@@ -139,10 +139,26 @@ export async function PUT(request: NextRequest) {
     const authHeader = request.headers.get("authorization");
     const token = authHeader?.split(" ")[1];
     const jwt = await jwtVerify(token!, SECRET_KEY, { audience: AUDIENCE });
-    const userId = Number(jwt.payload.sub!);
-    const uuid = jwt.payload.jti;
+    const { sub, jti, role } = jwt.payload;
+    if (!sub || !jti || !role) {
+      return createApiResponse({
+        status: false,
+        message: "Invalid Token",
+        statusCode: 403,
+      });
+    }
+    const userId = Number(sub);
+    const uuid = jti;
 
-    if (Number.isNaN(userId) || uuid === undefined) {
+    if (role != "user") {
+      return createApiResponse({
+        status: false,
+        message: "Unauthorized",
+        statusCode: 401,
+      });
+    }
+
+    if (Number.isNaN(userId)) {
       return createApiResponse({
         status: false,
         message: "User not found",
@@ -150,16 +166,27 @@ export async function PUT(request: NextRequest) {
       });
     }
 
-    const check = await prisma.user.findUnique({
+    const check = await prisma.user_device.findUnique({
       select: {
-        id: true,
+        id_user: true,
       },
       where: {
-        id: userId,
+        uuid: uuid,
+        id_user: userId,
       },
     });
     if (!check) {
       console.log("🚀 ~ PUT ~ check:", check);
+      await prisma.user_device.update({
+        where: {
+          uuid,
+        },
+        data: {
+          access_token: null,
+          refresh_token: null,
+          sign_in_type: null,
+        },
+      });
       return createApiResponse({
         status: false,
         message: "User not found",
@@ -168,7 +195,7 @@ export async function PUT(request: NextRequest) {
     }
 
     const accessToken = await createToken(userId.toString(), uuid);
-    const refreshToken = crypto.randomUUID();
+    const refreshToken = await createRefreshToken();
 
     const formData = await request.json();
     const last_ip = ipAddress(request);
@@ -199,10 +226,8 @@ export async function PUT(request: NextRequest) {
         user_device: {
           upsert: {
             where: {
-              id_user_uuid: {
-                id_user: userId,
-                uuid: uuid,
-              },
+              uuid: uuid,
+              id_user: userId,
             },
             create: {
               uuid: uuid,
@@ -215,7 +240,8 @@ export async function PUT(request: NextRequest) {
               new_version: validatedData.data.new_version ?? undefined,
               fcm_token: validatedData.data.fcm_token ?? undefined,
               access_token: accessToken,
-              refresh_token: refreshToken,
+              refresh_token: refreshToken.token,
+              refresh_token_expires_at: refreshToken.expiresAt,
             },
             update: {
               manufacturer: validatedData.data.manufacturer ?? undefined,
@@ -227,11 +253,11 @@ export async function PUT(request: NextRequest) {
               new_version: validatedData.data.new_version ?? undefined,
               fcm_token: validatedData.data.fcm_token ?? undefined,
               access_token: accessToken,
-              refresh_token: refreshToken,
+              refresh_token: refreshToken.token,
+              refresh_token_expires_at: refreshToken.expiresAt,
             },
           },
         },
-
         name: validatedData.data.name ?? undefined,
         user_preference: {
           update: {
@@ -246,7 +272,7 @@ export async function PUT(request: NextRequest) {
     const data = {
       ...validatedData.data,
       access_token: accessToken,
-      refresh_token: refreshToken,
+      refresh_token: refreshToken.token,
     };
 
     return createApiResponse({
