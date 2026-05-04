@@ -1,6 +1,6 @@
 import { AUDIENCE, SECRET_KEY } from "@/constants/v1/api";
 import createApiResponse from "@/lib/create_api_response";
-import createToken from "@/lib/create_token";
+import createToken, { createRefreshToken } from "@/lib/create_token";
 import prisma from "@/lib/prisma";
 import { SignInPayload } from "@/zod/user_schema";
 import { jwtVerify } from "jose";
@@ -12,10 +12,9 @@ export async function POST(request: NextRequest) {
     const authHeader = request.headers.get("authorization");
     const token = authHeader?.split(" ")[1];
     const jwt = await jwtVerify(token!, SECRET_KEY, { audience: AUDIENCE });
+    const { sub, jti, role } = jwt.payload;
 
-    const userId = Number(jwt.payload.sub!);
-
-    if (Number.isNaN(userId)) {
+    if (!sub || !jti || !role) {
       return createApiResponse({
         status: false,
         message: "User not found",
@@ -37,13 +36,21 @@ export async function POST(request: NextRequest) {
 
     const user_data = validatedData.data;
 
+    if (user_data.uuid != jti) {
+      return createApiResponse({
+        status: false,
+        message: "Invalid Token",
+        statusCode: 403,
+      });
+    }
+
     const user_device = await prisma.user_device.findFirst({
       where: {
-        uuid: user_data.uuid,
+        uuid: jti,
       },
     });
 
-    if (user_device?.id_user == null) {
+    if (user_device == null) {
       console.log(
         "🚀 ~ POST /api/v1/signin:",
         `Failed to get anonymous user: ${user_data.uuid}`,
@@ -55,47 +62,77 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    const id_user = user_device.id_user;
-    const newToken = await createToken(
-      user_device.id_user.toString(),
-      validatedData.data.uuid,
-      true,
-    );
-    const newRefreshToken = crypto.randomUUID();
-    const refreshTokenExpiresAt = new Date();
-    refreshTokenExpiresAt.setDate(refreshTokenExpiresAt.getDate() + 30); // Set expiry 30 days from now
+    // Check existing user
+    const existing_user = await prisma.user.findUnique({
+      where: {
+        email_pst: user_data.sign_in_type == 1 ? user_data.email : undefined,
+        email_google: user_data.sign_in_type == 2 ? user_data.email : undefined,
+        email_apple: user_data.sign_in_type == 3 ? user_data.email : undefined,
+      },
+      select: {
+        id: true,
+      },
+    });
 
     const update = await prisma.$transaction(async (tx) => {
+      let id_user = existing_user?.id;
+      let user: {
+        name: string | null;
+        id: number;
+        email_pst: string | null;
+        email_apple: string | null;
+        email_google: string | null;
+      };
+      if (id_user == null) {
+        // Create new user
+        user = await tx.user.create({
+          data: {
+            name: user_data.name,
+            email_pst:
+              user_data.sign_in_type == 1 ? user_data.email : undefined,
+            email_google:
+              user_data.sign_in_type == 2 ? user_data.email : undefined,
+            email_apple:
+              user_data.sign_in_type == 3 ? user_data.email : undefined,
+          },
+        });
+
+        id_user = user.id;
+      } else {
+        // Update user
+        user = await tx.user.update({
+          where: {
+            id: id_user,
+          },
+          data: {
+            email_pst:
+              user_data.sign_in_type == 1 ? user_data.email : undefined,
+            email_google:
+              user_data.sign_in_type == 2 ? user_data.email : undefined,
+            email_apple:
+              user_data.sign_in_type == 3 ? user_data.email : undefined,
+            name: user_data.name,
+          },
+        });
+      }
+
+      const newToken = await createToken(id_user.toString(), jti, true);
+      const newRefreshToken = await createRefreshToken();
+
       const device = await tx.user_device.update({
         where: {
-          id_user_uuid: {
-            id_user: id_user,
-            uuid: user_data.uuid,
-          },
+          uuid: user_data.uuid,
         },
         data: {
+          id_user: id_user,
           access_token: newToken,
-          refresh_token: newRefreshToken,
-          refresh_token_expires_at: refreshTokenExpiresAt,
+          refresh_token: newRefreshToken.token,
+          refresh_token_expires_at: newRefreshToken.expiresAt,
           sign_in_type: user_data.sign_in_type,
         },
         select: {
           access_token: true,
           refresh_token: true,
-        },
-      });
-
-      const user = await tx.user.update({
-        where: {
-          id: id_user,
-        },
-        data: {
-          email_pst: user_data.sign_in_type == 1 ? user_data.email : undefined,
-          email_google:
-            user_data.sign_in_type == 2 ? user_data.email : undefined,
-          email_apple:
-            user_data.sign_in_type == 3 ? user_data.email : undefined,
-          name: user_data.name,
         },
       });
 
@@ -111,14 +148,7 @@ export async function POST(request: NextRequest) {
 
     return createApiResponse({
       status: true,
-      data: {
-        name: update.name,
-        email_pst: update.email_pst,
-        email_apple: update.email_apple,
-        email_google: update.email_google,
-        access_token: update.access_token,
-        refresh_token: update.refresh_token,
-      },
+      data: update,
     });
   } catch (error) {
     console.log("🚀 ~ POST /api/v1/signin:", error);
