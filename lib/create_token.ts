@@ -4,7 +4,7 @@ import { SignJWT } from "jose";
 import { AUDIENCE, ISSUER, SECRET_KEY } from "@/constants/v1/api";
 
 const createToken = async (
-  aud: string,
+  sub: string,
   jti: string,
   isUser: boolean = false,
 ) => {
@@ -18,7 +18,7 @@ const createToken = async (
     .setIssuedAt()
     .setExpirationTime("3h")
     .setAudience(AUDIENCE)
-    .setSubject(aud)
+    .setSubject(sub)
     .setJti(jti)
     .sign(SECRET_KEY);
 
