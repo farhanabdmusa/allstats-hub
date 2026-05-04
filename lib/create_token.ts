@@ -25,4 +25,15 @@ const createToken = async (
   return token;
 };
 
+export const createRefreshToken = async () => {
+  const refreshToken = crypto.randomUUID();
+  const refreshTokenExpiresAt = new Date();
+  refreshTokenExpiresAt.setDate(refreshTokenExpiresAt.getDate() + 30); // Set expiry 30 days from now
+
+  return {
+    token: refreshToken,
+    expiresAt: refreshTokenExpiresAt,
+  };
+};
+
 export default createToken;
