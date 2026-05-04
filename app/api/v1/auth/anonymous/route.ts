@@ -1,6 +1,6 @@
 import { ALLOWED_ORIGIN, APP_KEY } from "@/constants/v1/api";
 import createApiResponse from "@/lib/create_api_response";
-import createToken from "@/lib/create_token";
+import createToken, { createRefreshToken } from "@/lib/create_token";
 import prisma from "@/lib/prisma";
 import UserSchema from "@/zod/user_schema";
 import { ipAddress } from "@vercel/functions";
@@ -36,134 +36,53 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    const token = await createToken(
+      validatedData.data.uuid,
+      validatedData.data.uuid,
+    );
+    const refreshToken = await createRefreshToken();
+
     const update = await prisma.$transaction(async (tx) => {
-      const user_device = await tx.user_device.findFirst({
+      await tx.user_device.upsert({
         where: {
           uuid: validatedData.data.uuid,
         },
+        create: {
+          uuid: validatedData.data.uuid,
+          manufacturer: validatedData.data.manufacturer,
+          device_model: validatedData.data.device_model,
+          os: validatedData.data.os,
+          first_session: validatedData.data.first_session ?? undefined,
+          fcm_token: validatedData.data.fcm_token,
+          is_virtual: validatedData.data.is_virtual,
+          last_ip: validatedData.data.last_ip,
+          os_version: validatedData.data.os_version,
+          new_version: validatedData.data.new_version ?? undefined,
+          last_session: validatedData.data.last_session ?? undefined,
+          access_token: token,
+          refresh_token: refreshToken.token,
+          refresh_token_expires_at: refreshToken.expiresAt,
+        },
+        update: {
+          manufacturer: validatedData.data.manufacturer,
+          device_model: validatedData.data.device_model,
+          os: validatedData.data.os,
+          first_session: validatedData.data.first_session ?? undefined,
+          fcm_token: validatedData.data.fcm_token,
+          is_virtual: validatedData.data.is_virtual,
+          last_ip: validatedData.data.last_ip,
+          os_version: validatedData.data.os_version,
+          new_version: validatedData.data.new_version ?? undefined,
+          last_session: validatedData.data.last_session ?? undefined,
+          access_token: token,
+          refresh_token: refreshToken.token,
+          refresh_token_expires_at: refreshToken.expiresAt,
+        },
       });
-      if (user_device && user_device.id_user) {
-        const token = await createToken(
-          user_device.id_user.toString(),
-          validatedData.data.uuid,
-        );
-        const refreshToken = crypto.randomUUID();
-        const refreshTokenExpiresAt = new Date();
-        refreshTokenExpiresAt.setDate(refreshTokenExpiresAt.getDate() + 30); // Set expiry 30 days from now
-        // Update user, user_device
-        const updatedUser = await tx.user.update({
-          where: {
-            id: user_device.id_user,
-          },
-          data: {
-            user_device: {
-              update: {
-                where: {
-                  id_user_uuid: {
-                    id_user: user_device.id_user,
-                    uuid: validatedData.data.uuid!,
-                  },
-                },
-                data: {
-                  manufacturer: validatedData.data.manufacturer,
-                  device_model: validatedData.data.device_model,
-                  os: validatedData.data.os,
-                  first_session: validatedData.data.first_session ?? undefined,
-                  fcm_token: validatedData.data.fcm_token,
-                  is_virtual: validatedData.data.is_virtual,
-                  last_ip: validatedData.data.last_ip,
-                  os_version: validatedData.data.os_version,
-                  new_version: validatedData.data.new_version ?? undefined,
-                  last_session: validatedData.data.last_session ?? undefined,
-                  access_token: token,
-                  refresh_token: refreshToken,
-                  refresh_token_expires_at: refreshTokenExpiresAt,
-                },
-              },
-            },
-            user_preference: {
-              update: {
-                lang: validatedData.data.lang ?? undefined,
-                domain: validatedData.data.domain ?? undefined,
-              },
-            },
-          },
-          include: {
-            user_preference: {
-              select: {
-                domain: true,
-                lang: true,
-                topic_selection: true,
-              },
-            },
-          },
-        });
-
-        return {
-          access_token: token,
-          refresh_token: refreshToken,
-          ...updatedUser.user_preference,
-        };
-      } else {
-        const user = await tx.user.create({
-          data: {
-            user_device: {
-              create: {
-                uuid: validatedData.data.uuid,
-                manufacturer: validatedData.data.manufacturer,
-                device_model: validatedData.data.device_model,
-                os: validatedData.data.os,
-                first_session: validatedData.data.first_session ?? undefined,
-                fcm_token: validatedData.data.fcm_token,
-                is_virtual: validatedData.data.is_virtual,
-                last_ip: validatedData.data.last_ip,
-                os_version: validatedData.data.os_version,
-                new_version: validatedData.data.new_version ?? undefined,
-                last_session: validatedData.data.last_session ?? undefined,
-              },
-            },
-            user_preference: {
-              create: {
-                lang: validatedData.data.lang || "id",
-                domain: validatedData.data.domain || "0000",
-                topic_selection: false,
-              },
-            },
-          },
-          select: {
-            id: true,
-            user_preference: {
-              select: {
-                domain: true,
-                lang: true,
-                topic_selection: true,
-              },
-            },
-          },
-        });
-        const token = await createToken(
-          user.id.toString(),
-          validatedData.data.uuid,
-        );
-        const refreshToken = crypto.randomUUID();
-        await tx.user_device.update({
-          where: {
-            id_user_uuid: {
-              id_user: user.id,
-              uuid: validatedData.data.uuid!,
-            },
-          },
-          data: {
-            access_token: token,
-            refresh_token: refreshToken,
-          },
-        });
-        return {
-          access_token: token,
-          refresh_token: refreshToken,
-          ...user.user_preference,
-        };
-      }
+      return {
+        access_token: token,
+        refresh_token: refreshToken.token,
+      };
     });
 
     return createApiResponse({
