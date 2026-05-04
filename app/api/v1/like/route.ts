@@ -162,6 +162,9 @@ export async function GET(request: NextRequest) {
     const jwt = await jwtVerify(token!, SECRET_KEY, {
       audience: AUDIENCE,
     });
+    const { role } = jwt.payload;
+
+    const signedUser = role == "user";
 
     const searchParams = request.nextUrl.searchParams;
     const product_id = searchParams.get("product_id");
@@ -188,18 +191,20 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    const isLiked = await prisma.user_like_product.findFirst({
-      select: {
-        id: true,
-        timestamp: true,
-      },
-      where: {
-        mfd: validatedData.data.mfd,
-        product_id: validatedData.data.product_id,
-        product_type: validatedData.data.product_type,
-        user_id: Number(jwt.payload.sub),
-      },
-    });
+    const isLiked = signedUser
+      ? await prisma.user_like_product.findFirst({
+          select: {
+            id: true,
+            timestamp: true,
+          },
+          where: {
+            mfd: validatedData.data.mfd,
+            product_id: validatedData.data.product_id,
+            product_type: validatedData.data.product_type,
+            user_id: Number(jwt.payload.sub),
+          },
+        })
+      : null;
 
     return createApiResponse({
       status: true,
