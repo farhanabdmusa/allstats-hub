@@ -6,7 +6,7 @@ import z from "zod";
 import { jwtVerify } from "jose";
 import { AUDIENCE, SECRET_KEY } from "@/constants/v1/api";
 import { UpdateUserPayload } from "@/zod/user_schema";
-import createToken from "@/lib/create_token";
+import createToken, { createRefreshToken } from "@/lib/create_token";
 
 export async function GET(request: NextRequest) {
   try {
@@ -20,9 +20,16 @@ export async function GET(request: NextRequest) {
     }
     const token = authHeader?.split(" ")[1];
     const jwt = await jwtVerify(token!, SECRET_KEY, { audience: AUDIENCE });
-    const userId = Number(jwt.payload.sub!);
-    const role = jwt.payload.role;
-    const uuid = jwt.payload.jti;
+    const { sub, jti, role } = jwt.payload;
+    if (!sub || !jti || !role) {
+      return createApiResponse({
+        status: false,
+        message: "Invalid Token",
+        statusCode: 403,
+      });
+    }
+    const userId = Number(sub);
+    const uuid = jti;
 
     if (role != "user") {
       return createApiResponse({
@@ -32,7 +39,7 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    if (Number.isNaN(userId) || uuid === undefined) {
+    if (Number.isNaN(userId)) {
       return createApiResponse({
         status: false,
         message: "User not found",
@@ -64,22 +71,20 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    const newToken = await createToken(userId.toString(), uuid);
-    const refreshToken = crypto.randomUUID();
+    const newToken = await createToken(userId.toString(), uuid, true);
+    const refreshToken = await createRefreshToken();
 
     const updatedUser = await prisma.user.update({
       data: {
         user_device: {
           update: {
             where: {
-              id_user_uuid: {
-                id_user: userId,
-                uuid: uuid,
-              },
+              uuid,
             },
             data: {
               access_token: newToken,
-              refresh_token: refreshToken,
+              refresh_token: refreshToken.token,
+              refresh_token_expires_at: refreshToken.expiresAt,
             },
           },
         },
@@ -112,7 +117,7 @@ export async function GET(request: NextRequest) {
       lang: updatedUser.user_preference?.lang,
       topic_selection: updatedUser.user_preference?.topic_selection,
       access_token: newToken,
-      refresh_token: refreshToken,
+      refresh_token: refreshToken.token,
     };
 
     return createApiResponse({
