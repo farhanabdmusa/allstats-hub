@@ -47,6 +47,31 @@ export async function GET(request: NextRequest) {
       });
     }
 
+    const check = await prisma.user_device.findFirst({
+      where: {
+        id_user: userId,
+        uuid: uuid,
+      },
+    });
+
+    if (!check) {
+      await prisma.user_device.update({
+        where: {
+          uuid,
+        },
+        data: {
+          access_token: null,
+          refresh_token: null,
+          sign_in_type: null,
+        },
+      });
+      return createApiResponse({
+        status: false,
+        message: "User not found",
+        statusCode: 404,
+      });
+    }
+
     const user = await prisma.user.findUnique({
       omit: {
         id: true,
