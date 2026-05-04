@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
       return createApiResponse({
         status: false,
         message: "Unauthorized",
-        statusCode: 401,
+        statusCode: 403,
       });
     }
 
@@ -179,7 +179,7 @@ export async function PUT(request: NextRequest) {
       return createApiResponse({
         status: false,
         message: "Unauthorized",
-        statusCode: 401,
+        statusCode: 403,
       });
     }
 
