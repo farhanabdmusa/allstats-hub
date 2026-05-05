@@ -40,6 +40,7 @@ import {
   countNotifications,
   deleteNotification,
   getNotifications,
+  resendNotification,
 } from "@/data/notifications";
 import {
   Dialog,
@@ -214,7 +215,28 @@ const columns: ColumnDef<Notification>[] = [
               Edit
             </Link>
           </DropdownMenuItem>
-          <DropdownMenuItem>Make a copy</DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={async () => {
+              const toastID = toast.loading("Sending notification...", {
+                position: "top-center",
+              });
+              const result = await resendNotification(row.original.id);
+              if (result) {
+                toast.success("Notification send successfully", {
+                  id: toastID,
+                  position: "top-center",
+                });
+                window.location.reload();
+              } else {
+                toast.error("Failed to send notification", {
+                  id: toastID,
+                  position: "top-center",
+                });
+              }
+            }}
+          >
+            Resend Notification
+          </DropdownMenuItem>
           <DropdownMenuSeparator />
           <Dialog key={`delete-${row.original.id}`}>
             <DialogTrigger asChild>
@@ -243,7 +265,7 @@ const columns: ColumnDef<Notification>[] = [
                         "Deleting notification...",
                         {
                           position: "top-center",
-                        }
+                        },
                       );
                       const result = await deleteNotification(row.original.id);
                       if (result) {
@@ -313,7 +335,7 @@ export function DataTable() {
       const data = await getNotifications(
         pagination.pageSize,
         pagination.pageIndex,
-        sorting
+        sorting,
       );
       setTotal(totalNotifications);
       setData([...data]);
@@ -355,7 +377,7 @@ export function DataTable() {
                       className={cn(
                         header.column.getCanSort()
                           ? "cursor-pointer select-none"
-                          : ""
+                          : "",
                       )}
                       onClick={
                         header.column.getCanSort()
@@ -371,7 +393,7 @@ export function DataTable() {
                           ? null
                           : flexRender(
                               header.column.columnDef.header,
-                              header.getContext()
+                              header.getContext(),
                             )}
                         {header.column.getCanSort() ? (
                           <div className="relative w-[14px] h-[14px]">
@@ -384,7 +406,7 @@ export function DataTable() {
                                     header.column.getIsSorted() === "asc",
                                   "opacity-100":
                                     header.column.getIsSorted() != false,
-                                }
+                                },
                               )}
                             />
                             <IconArrowsUpDown
@@ -394,7 +416,7 @@ export function DataTable() {
                                 {
                                   "rotate-180 opacity-100 text-gray-300":
                                     header.column.getIsSorted() == false,
-                                }
+                                },
                               )}
                             />
                           </div>
@@ -427,7 +449,7 @@ export function DataTable() {
                     <TableCell key={cell.id}>
                       {flexRender(
                         cell.column.columnDef.cell,
-                        cell.getContext()
+                        cell.getContext(),
                       )}
                     </TableCell>
                   ))}
@@ -451,7 +473,7 @@ export function DataTable() {
           Showing {pagination.pageIndex * pagination.pageSize + 1} -{" "}
           {Math.min(
             (pagination.pageIndex + 1) * pagination.pageSize,
-            table.getFilteredRowModel().rows.length
+            table.getFilteredRowModel().rows.length,
           )}{" "}
           of {table.getFilteredRowModel().rows.length} results
         </div>
