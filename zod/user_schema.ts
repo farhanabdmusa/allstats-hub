@@ -39,11 +39,32 @@ const UpdateUserPayload = UserSchema.extend({
   topic_selected: z.array(z.number()).optional().nullable(),
 });
 
+const UserTopicPayload = z.object({
+  id: z.number(),
+  timestamp: z.coerce.date(),
+});
+
+const UserPreferencePayload = z.object({
+  mfd: z.string().length(4),
+  lang: z.enum(["id", "en"], { error: "Unknown Language" }),
+  topic_selection: z.boolean().default(false),
+  subscribed_topic: UserTopicPayload.array().optional(),
+});
+
+const UserFavoritesPayload = z.object({
+  mfd: z.string().length(4),
+  product_type: z.number(),
+  product_id: z.string(),
+  timestamp: z.coerce.date(),
+});
+
 const SignInPayload = z.object({
   uuid: z.string("UUID is required"),
   name: z.string(),
   email: z.email(),
   sign_in_type: z.number().min(1).max(3),
+  user_preference: UserPreferencePayload.clone(),
+  user_favorites: UserFavoritesPayload.clone().array().optional(),
 });
 
 export default UserSchema;

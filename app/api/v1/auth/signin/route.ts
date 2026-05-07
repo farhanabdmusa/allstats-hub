@@ -94,6 +94,35 @@ export async function POST(request: NextRequest) {
               user_data.sign_in_type == 2 ? user_data.email : undefined,
             email_apple:
               user_data.sign_in_type == 3 ? user_data.email : undefined,
+            user_preference: {
+              create: {
+                lang: user_data.user_preference.lang,
+                domain: user_data.user_preference.mfd,
+                topic_selection: user_data.user_preference.topic_selection,
+              },
+            },
+            user_topic: {
+              createMany: {
+                data:
+                  user_data.user_preference.subscribed_topic?.map((e) => ({
+                    id_topic: e.id,
+                    subscribed_at: e.timestamp,
+                  })) ?? [],
+                skipDuplicates: true,
+              },
+            },
+            user_like_product: {
+              createMany: {
+                skipDuplicates: true,
+                data:
+                  user_data.user_favorites?.map((e) => ({
+                    mfd: e.mfd,
+                    product_id: e.product_id,
+                    product_type: e.product_type,
+                    timestamp: e.timestamp,
+                  })) ?? [],
+              },
+            },
           },
         });
 
@@ -112,6 +141,42 @@ export async function POST(request: NextRequest) {
             email_apple:
               user_data.sign_in_type == 3 ? user_data.email : undefined,
             name: user_data.name,
+            user_preference: {
+              upsert: {
+                create: {
+                  lang: user_data.user_preference.lang,
+                  domain: user_data.user_preference.mfd,
+                  topic_selection: user_data.user_preference.topic_selection,
+                },
+                update: {
+                  lang: user_data.user_preference.lang,
+                  domain: user_data.user_preference.mfd,
+                  topic_selection: user_data.user_preference.topic_selection,
+                },
+              },
+            },
+            user_like_product: {
+              createMany: {
+                skipDuplicates: true,
+                data:
+                  user_data.user_favorites?.map((e) => ({
+                    mfd: e.mfd,
+                    product_id: e.product_id,
+                    product_type: e.product_type,
+                    timestamp: e.timestamp,
+                  })) ?? [],
+              },
+            },
+            user_topic: {
+              createMany: {
+                skipDuplicates: true,
+                data:
+                  user_data.user_preference.subscribed_topic?.map((e) => ({
+                    id_topic: e.id,
+                    subscribed_at: e.timestamp,
+                  })) ?? [],
+              },
+            },
           },
         });
       }
