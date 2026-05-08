@@ -134,13 +134,24 @@ export async function GET(request: NextRequest) {
     });
 
     const data = {
+      lang: updatedUser.user_preference?.lang,
+      domain: updatedUser.user_preference?.domain,
+      topic_selection: updatedUser.user_preference?.topic_selection,
+      uuid: uuid,
+      new_version: check.new_version,
+      first_session: check.first_session,
+      last_session: check.last_session,
+      is_virtual: check.is_virtual,
+      device_model: check.device_model,
+      manufacturer: check.manufacturer,
+      os: check.os,
+      os_version: check.os_version,
+      fcm_token: check.fcm_token,
+      sign_in_type: check.sign_in_type,
+      name: updatedUser.name,
       email_apple: updatedUser.email_apple,
       email_pst: updatedUser.email_pst,
       email_google: updatedUser.email_google,
-      name: updatedUser.name,
-      domain: updatedUser.user_preference?.domain,
-      lang: updatedUser.user_preference?.lang,
-      topic_selection: updatedUser.user_preference?.topic_selection,
       access_token: newToken,
       refresh_token: refreshToken.token,
     };
