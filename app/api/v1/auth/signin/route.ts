@@ -201,6 +201,18 @@ export async function POST(request: NextRequest) {
         },
       });
 
+      const liked_products = await tx.user_like_product.findMany({
+        where: {
+          user_id: id_user,
+        },
+        select: {
+          mfd: true,
+          product_id: true,
+          product_type: true,
+          timestamp: true,
+        },
+      });
+
       return {
         name: user.name,
         email_pst: user.email_pst,
@@ -208,6 +220,7 @@ export async function POST(request: NextRequest) {
         email_google: user.email_google,
         access_token: device.access_token,
         refresh_token: device.refresh_token,
+        liked_products: liked_products,
       };
     });
 
