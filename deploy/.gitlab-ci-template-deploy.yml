@@ -21,6 +21,7 @@
     - oc project ${K8S_NS}
     - oc whoami
   script:
+    - echo "Deploying ${IMAGE_TAG}"
     - kustomize version
     - cd ._k8s/${CI_COMMIT_BRANCH}
     - kustomize edit set image ${CI_REGISTRY_IMAGE}=${IMAGE_TAG}
