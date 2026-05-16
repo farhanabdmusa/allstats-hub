@@ -10,6 +10,7 @@ secret_detection:
   #  - when: always
   allow_failure: false
   stage: secret-detection
+  image: registry.gitlab.com/security-products/secrets:7
 
 dummy:
   stage: dummy
