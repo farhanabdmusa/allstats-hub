@@ -3,6 +3,8 @@ import { SiteHeader } from "@/components/site-header";
 import { SidebarInset } from "@/components/ui/sidebar";
 import { getAllTopic } from "@/data/topic";
 
+export const dynamic = "force-dynamic";
+
 const CreateNotificationPage = async () => {
   const topics = await getAllTopic();
   return (
