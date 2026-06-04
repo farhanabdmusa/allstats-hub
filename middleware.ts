@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { errors, jwtVerify } from "jose";
 import createApiResponse from "./lib/create_api_response";
-import { AUDIENCE, ISSUER } from "./constants/v1/api";
+import { AUDIENCE } from "./constants/v1/api";
 
 const SECRET_KEY = new TextEncoder().encode(process.env.SIGNATURE_SECRET_KEY);
 
@@ -25,10 +25,15 @@ export async function middleware(request: NextRequest) {
   }
 
   try {
-    await jwtVerify(token, SECRET_KEY, {
-      audience: AUDIENCE,
-      issuer: ISSUER,
-    });
+    const jwt = await jwtVerify(token!, SECRET_KEY, { audience: AUDIENCE });
+    const { sub, jti, role } = jwt.payload;
+    if (!sub || !jti || !role) {
+      return createApiResponse({
+        status: false,
+        message: "Invalid Token",
+        statusCode: 403,
+      });
+    }
   } catch (err) {
     if (err instanceof errors.JWTExpired) {
       return createApiResponse({
@@ -54,8 +59,4 @@ export const config = {
   matcher: ["/api/:path*"],
 };
 
-const publicApiRoutes = [
-  "/api/v1/auth/anonymous",
-  "/api/v1/auth/refresh",
-  "/api/v1/topic",
-];
+const publicApiRoutes = ["/api/v1/auth/anonymous"];
