@@ -4,7 +4,7 @@ import prisma from "@/lib/prisma";
 import createApiResponse from "@/lib/create_api_response";
 import z from "zod";
 import { jwtVerify } from "jose";
-import { AUDIENCE, SECRET_KEY } from "@/constants/v1/api";
+import { AUDIENCE } from "@/constants/v1/api";
 import { UpdateUserPayload } from "@/zod/user_schema";
 import createToken, { createRefreshToken } from "@/lib/create_token";
 
@@ -18,6 +18,9 @@ export async function GET(request: NextRequest) {
         statusCode: 401,
       });
     }
+    const SECRET_KEY = new TextEncoder().encode(
+      process.env.SIGNATURE_SECRET_KEY,
+    );
     const token = authHeader?.split(" ")[1];
     const jwt = await jwtVerify(token!, SECRET_KEY, { audience: AUDIENCE });
     const { sub, jti, role } = jwt.payload;
@@ -172,6 +175,9 @@ export async function GET(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
+    const SECRET_KEY = new TextEncoder().encode(
+      process.env.SIGNATURE_SECRET_KEY,
+    );
     const authHeader = request.headers.get("authorization");
     const token = authHeader?.split(" ")[1];
     const jwt = await jwtVerify(token!, SECRET_KEY, { audience: AUDIENCE });

@@ -1,4 +1,4 @@
-import { AUDIENCE, SECRET_KEY } from "@/constants/v1/api";
+import { AUDIENCE } from "@/constants/v1/api";
 import createApiResponse from "@/lib/create_api_response";
 import createToken, { createRefreshToken } from "@/lib/create_token";
 import prisma from "@/lib/prisma";
@@ -9,6 +9,9 @@ import z from "zod";
 
 export async function POST(request: NextRequest) {
   try {
+    const SECRET_KEY = new TextEncoder().encode(
+      process.env.SIGNATURE_SECRET_KEY,
+    );
     const authHeader = request.headers.get("authorization");
     const token = authHeader?.split(" ")[1];
     const jwt = await jwtVerify(token!, SECRET_KEY, { audience: AUDIENCE });

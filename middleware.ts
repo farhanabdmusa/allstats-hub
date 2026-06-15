@@ -1,10 +1,9 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { errors, jwtVerify } from "jose";
+import { jwtVerify } from "jose";
 import createApiResponse from "./lib/create_api_response";
 import { AUDIENCE } from "./constants/v1/api";
-
-const SECRET_KEY = new TextEncoder().encode(process.env.SIGNATURE_SECRET_KEY);
+import { JOSEError, JWTExpired } from "jose/errors";
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -25,6 +24,9 @@ export async function middleware(request: NextRequest) {
   }
 
   try {
+    const SECRET_KEY = new TextEncoder().encode(
+      process.env.SIGNATURE_SECRET_KEY,
+    );
     const jwt = await jwtVerify(token!, SECRET_KEY, { audience: AUDIENCE });
     const { sub, jti, role } = jwt.payload;
     if (!sub || !jti || !role) {
@@ -35,15 +37,22 @@ export async function middleware(request: NextRequest) {
       });
     }
   } catch (err) {
-    if (err instanceof errors.JWTExpired) {
+    console.log(`🚀 ~ middleware ~ path ${pathname} ~ err:`, err);
+    if (err instanceof JWTExpired) {
       return createApiResponse({
         status: false,
         message: "Expired Token",
         statusCode: 401,
       });
     }
-    console.log(`🚀 ~ middleware ~ path ${pathname} ~ err:`, err);
 
+    if (err instanceof JOSEError) {
+      return createApiResponse({
+        status: false,
+        message: err.code,
+        statusCode: 401,
+      });
+    }
     return createApiResponse({
       status: false,
       message: "Unauthorized",

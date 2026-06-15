@@ -1,4 +1,4 @@
-import { ALLOWED_ORIGIN, APP_KEY } from "@/constants/v1/api";
+import { ALLOWED_ORIGIN } from "@/constants/v1/api";
 import createApiResponse from "@/lib/create_api_response";
 import createToken, { createRefreshToken } from "@/lib/create_token";
 import prisma from "@/lib/prisma";
@@ -13,7 +13,10 @@ export async function POST(request: NextRequest) {
     const authToken = authHeader?.split(" ")[1];
     const userAgent = request.headers.get("User-Agent");
 
-    if (authToken != APP_KEY && userAgent != ALLOWED_ORIGIN) {
+    if (
+      authToken != process.env.ALLSTATS_SECRET_KEY &&
+      userAgent != ALLOWED_ORIGIN
+    ) {
       return createApiResponse({
         status: false,
         message: "Unauthorized",

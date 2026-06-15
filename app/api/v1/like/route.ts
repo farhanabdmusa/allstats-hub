@@ -1,4 +1,4 @@
-import { AUDIENCE, SECRET_KEY } from "@/constants/v1/api";
+import { AUDIENCE } from "@/constants/v1/api";
 import createApiResponse from "@/lib/create_api_response";
 import prisma from "@/lib/prisma";
 import GetLikeSchema from "@/zod/get_like_schema";
@@ -157,6 +157,9 @@ const unlike = async ({
 
 export async function GET(request: NextRequest) {
   try {
+    const SECRET_KEY = new TextEncoder().encode(
+      process.env.SIGNATURE_SECRET_KEY,
+    );
     const authHeader = request.headers.get("authorization");
     const token = authHeader?.split(" ")[1];
     const jwt = await jwtVerify(token!, SECRET_KEY, {
@@ -226,6 +229,9 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const SECRET_KEY = new TextEncoder().encode(
+      process.env.SIGNATURE_SECRET_KEY,
+    );
     const authHeader = request.headers.get("authorization");
     const token = authHeader?.split(" ")[1];
     const jwt = await jwtVerify(token!, SECRET_KEY, {

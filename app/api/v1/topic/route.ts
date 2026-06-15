@@ -1,4 +1,4 @@
-import { AUDIENCE, SECRET_KEY } from "@/constants/v1/api";
+import { AUDIENCE } from "@/constants/v1/api";
 import createApiResponse from "@/lib/create_api_response";
 import prisma from "@/lib/prisma";
 import { jwtVerify } from "jose";
@@ -15,6 +15,9 @@ export async function GET(request: NextRequest) {
         statusCode: 401,
       });
     }
+    const SECRET_KEY = new TextEncoder().encode(
+      process.env.SIGNATURE_SECRET_KEY,
+    );
     const token = authHeader?.split(" ")[1];
     const jwt = await jwtVerify(token!, SECRET_KEY, { audience: AUDIENCE });
     const { sub, role } = jwt.payload;

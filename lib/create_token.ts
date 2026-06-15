@@ -1,7 +1,7 @@
 "use server";
 
 import { SignJWT } from "jose";
-import { AUDIENCE, ISSUER, SECRET_KEY } from "@/constants/v1/api";
+import { AUDIENCE, ISSUER } from "@/constants/v1/api";
 
 const createToken = async (
   sub: string,
@@ -20,7 +20,7 @@ const createToken = async (
     .setAudience(AUDIENCE)
     .setSubject(sub)
     .setJti(jti)
-    .sign(SECRET_KEY);
+    .sign(new TextEncoder().encode(process.env.SIGNATURE_SECRET_KEY));
 
   return token;
 };
