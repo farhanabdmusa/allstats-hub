@@ -14,15 +14,17 @@ model sign_up_type {
 }
 
 model user {
-  id                Int                 @id(map: "user_pk") @default(autoincrement())
-  email_pst         String?             @unique(map: "user_unique_email_pst") @db.VarChar
-  name              String?             @db.VarChar
-  email_apple       String?             @unique(map: "user_unique_email_apple") @db.VarChar
-  email_google      String?             @unique(map: "user_unique_email_google") @db.VarChar
-  user_device       user_device[]
-  user_like_product user_like_product[]
-  user_preference   user_preference?
-  user_topic        user_topic[]
+  id                  Int                 @id(map: "user_pk") @default(autoincrement())
+  email_pst           String?             @unique(map: "user_unique_email_pst") @db.VarChar
+  name                String?             @db.VarChar
+  email_apple         String?             @unique(map: "user_unique_email_apple") @db.VarChar
+  email_google        String?             @unique(map: "user_unique_email_google") @db.VarChar
+  apple_user_id       String?             @unique(map: "user_unique") @db.VarChar
+  apple_refresh_token String?             @db.VarChar
+  user_device         user_device[]
+  user_like_product   user_like_product[]
+  user_preference     user_preference?
+  user_topic          user_topic[]
 }
 
 model product_type {
