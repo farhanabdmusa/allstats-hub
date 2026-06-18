@@ -91,7 +91,7 @@ const getRefreshToken = async (
       .setProtectedHeader({ alg: "ES256", kid: process.env.APPLE_KID })
       .setIssuer(process.env.APPLE_TEAM_ID ?? "")
       .setIssuedAt()
-      .setExpirationTime("3h")
+      .setExpirationTime("10m")
       .setAudience("https://appleid.apple.com")
       .setSubject(BUNDLE_ID)
       .sign(privateKey);
@@ -152,4 +152,82 @@ const getRefreshToken = async (
   }
 };
 
-export { verifyAppleToken, getRefreshToken };
+const revokeToken = async (
+  authorizationCode: string,
+): Promise<{
+  status: boolean;
+  token?: string;
+  error?: string;
+}> => {
+  try {
+    const privateKey = await importPKCS8(
+      process.env.APPLE_SECRET_KEY ?? "",
+      "ES256",
+    );
+
+    const token = await new SignJWT()
+      .setProtectedHeader({ alg: "ES256", kid: process.env.APPLE_KID })
+      .setIssuer(process.env.APPLE_TEAM_ID ?? "")
+      .setIssuedAt()
+      .setExpirationTime("10m")
+      .setAudience("https://appleid.apple.com")
+      .setSubject(BUNDLE_ID)
+      .sign(privateKey);
+
+    const headers = new Headers();
+    headers.append("content-type", "application/x-www-form-urlencoded");
+
+    const urlencoded = new URLSearchParams();
+    urlencoded.append("client_id", BUNDLE_ID);
+    urlencoded.append("client_secret", token);
+    urlencoded.append("code", authorizationCode);
+    urlencoded.append("token_type_hint", "refresh_token");
+
+    const requestOptions = {
+      method: "POST",
+      headers: headers,
+      body: urlencoded,
+    };
+
+    const request = await fetch(
+      "https://appleid.apple.com/auth/revoke",
+      requestOptions,
+    );
+
+    if (!request.ok) {
+      const res = await request.json();
+      return {
+        status: false,
+        error: `${res.error_description ?? `${request.status} ${request.statusText}`} (EAA-04)`,
+      };
+    }
+
+    const response = await request.json();
+    if (response.refresh_token) {
+      return {
+        status: true,
+        token: response.refresh_token,
+      };
+    }
+
+    return {
+      status: false,
+      error: "Unable to reset authorization (EAART-01)",
+    };
+  } catch (error) {
+    console.error("🚀 ~ revokeToken ~ error:", error);
+    if (error instanceof JOSEError) {
+      return {
+        status: false,
+        error: `${error.code} (EAART-02)`,
+      };
+    }
+
+    return {
+      status: false,
+      error: "Unknown error while reset authorization (EAART-03)",
+    };
+  }
+};
+
+export { verifyAppleToken, getRefreshToken, revokeToken };

@@ -1,5 +1,5 @@
 import { AUDIENCE } from "@/constants/v1/api";
-import { getRefreshToken, verifyAppleToken } from "@/data/apple";
+import { getRefreshToken, revokeToken, verifyAppleToken } from "@/data/apple";
 import createApiResponse from "@/lib/create_api_response";
 import prisma from "@/lib/prisma";
 import { AppleSignInPayload } from "@/zod/apple_sign_in_schema";
@@ -167,6 +167,15 @@ export async function POST(request: NextRequest): Promise<
     });
 
     if (user == null) {
+      const revoke = await revokeToken(user_data.authorization);
+
+      if (!revoke.status && revoke.error != undefined) {
+        return createApiResponse({
+          status: false,
+          statusCode: 401,
+          message: revoke.error,
+        });
+      }
       return createApiResponse({
         status: false,
         statusCode: 404,
