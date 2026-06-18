@@ -202,24 +202,15 @@ const revokeToken = async (
       };
     }
 
-    const response = await request.json();
-    if (response.refresh_token) {
-      return {
-        status: true,
-        token: response.refresh_token,
-      };
-    }
-
     return {
-      status: false,
-      error: "Unable to reset authorization (EAART-02)",
+      status: true,
     };
   } catch (error) {
     console.error("🚀 ~ revokeToken ~ error:", error);
     if (error instanceof JOSEError) {
       return {
         status: false,
-        error: `${error.code} (EAART-03)`,
+        error: `${error.code} (EAART-02)`,
       };
     }
 
