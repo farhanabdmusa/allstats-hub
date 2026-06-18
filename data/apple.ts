@@ -120,7 +120,7 @@ const getRefreshToken = async (
       const res = await request.json();
       return {
         status: false,
-        error: `${res.error_description ?? `${request.status} ${request.statusText}`} (EAA-04)`,
+        error: `${res.error_description ?? res.error ?? `${request.status} ${request.statusText}`} (EAA-04)`,
       };
     }
 
@@ -198,7 +198,7 @@ const revokeToken = async (
       const res = await request.json();
       return {
         status: false,
-        error: `${res.error ?? `${request.status} ${request.statusText}`} (EAART-01)`,
+        error: `${res.error_description ?? res.error ?? `${request.status} ${request.statusText}`} (EAART-01)`,
       };
     }
 
