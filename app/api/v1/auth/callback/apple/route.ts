@@ -167,15 +167,18 @@ export async function POST(request: NextRequest): Promise<
     });
 
     if (user == null) {
-      const revoke = await revokeToken(user_data.authorization);
+      if (appleToken.token) {
+        const revoke = await revokeToken(appleToken.token);
 
-      if (!revoke.status && revoke.error != undefined) {
-        return createApiResponse({
-          status: false,
-          statusCode: 401,
-          message: revoke.error,
-        });
+        if (!revoke.status && revoke.error != undefined) {
+          return createApiResponse({
+            status: false,
+            statusCode: 401,
+            message: revoke.error,
+          });
+        }
       }
+
       return createApiResponse({
         status: false,
         statusCode: 404,

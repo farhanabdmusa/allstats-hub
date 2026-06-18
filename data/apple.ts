@@ -153,7 +153,7 @@ const getRefreshToken = async (
 };
 
 const revokeToken = async (
-  authorizationCode: string,
+  refreshToken: string,
 ): Promise<{
   status: boolean;
   token?: string;
@@ -180,7 +180,7 @@ const revokeToken = async (
     const urlencoded = new URLSearchParams();
     urlencoded.append("client_id", BUNDLE_ID);
     urlencoded.append("client_secret", token);
-    urlencoded.append("code", authorizationCode);
+    urlencoded.append("token", refreshToken);
     urlencoded.append("token_type_hint", "refresh_token");
 
     const requestOptions = {
@@ -198,7 +198,7 @@ const revokeToken = async (
       const res = await request.json();
       return {
         status: false,
-        error: `${res.error_description ?? `${request.status} ${request.statusText}`} (EAART-01)`,
+        error: `${res.error ?? `${request.status} ${request.statusText}`} (EAART-01)`,
       };
     }
 
