@@ -182,7 +182,8 @@ export async function POST(request: NextRequest): Promise<
       return createApiResponse({
         status: false,
         statusCode: 404,
-        message: "Unregistered user (EAA-404)",
+        message:
+          "Registration couldn't be completed. Please try signing in again. (EAA-404)",
       });
     }
 
