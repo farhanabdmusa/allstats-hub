@@ -31,11 +31,11 @@ export async function POST(request: NextRequest): Promise<
     );
     const { sub, jti, role } = jwt.payload;
 
-    if (!sub || !jti || !role) {
+    if (!sub || !jti || !role || role != "guest") {
       return createApiResponse({
         status: false,
-        message: "User not found",
-        statusCode: 404,
+        message: "Invalid Token",
+        statusCode: 401,
       });
     }
 
