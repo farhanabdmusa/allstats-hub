@@ -68,4 +68,9 @@ const SignInPayload = z.object({
 });
 
 export default UserSchema;
-export { UpdateUserPayload, SignInPayload };
+export {
+  UpdateUserPayload,
+  SignInPayload,
+  UserPreferencePayload,
+  UserFavoritesPayload,
+};
