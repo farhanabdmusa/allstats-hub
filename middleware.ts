@@ -68,4 +68,4 @@ export const config = {
   matcher: ["/api/:path*"],
 };
 
-const publicApiRoutes = ["/api/v1/auth/anonymous"];
+const publicApiRoutes = ["/api/v1/auth/anonymous", "/api/v1/auth/refresh"];
