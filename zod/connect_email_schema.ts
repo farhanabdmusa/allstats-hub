@@ -14,7 +14,7 @@ const ConnectAppleSchema = z.object({
 });
 
 const DisconnectEmailSchema = z.object({
-  type: z.number().min(1).max(3),
+  type: z.coerce.number().min(1).max(3),
 });
 
 export { ConnectEmailSchema, DisconnectEmailSchema, ConnectAppleSchema };
