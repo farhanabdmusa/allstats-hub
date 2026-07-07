@@ -2,7 +2,7 @@ import z from "zod";
 
 const ConnectEmailSchema = z.object({
   email: z.email(),
-  type: z.coerce.number().min(1).max(3),
+  type: z.coerce.number().min(1).max(2),
 });
 
 const ConnectAppleSchema = z.object({
