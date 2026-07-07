@@ -82,6 +82,7 @@ export async function POST(request: NextRequest) {
           refresh_token: refreshToken.token,
           refresh_token_expires_at: refreshToken.expiresAt,
           sign_in_type: null,
+          id_user: null,
         },
       });
       return {
