@@ -13,8 +13,17 @@ const ConnectAppleSchema = z.object({
   family_name: z.string().optional().nullable(),
 });
 
+const ConnectGoogleSchema = z.object({
+  id_token: z.string(),
+});
+
 const DisconnectEmailSchema = z.object({
   type: z.coerce.number().min(1).max(3),
 });
 
-export { ConnectEmailSchema, DisconnectEmailSchema, ConnectAppleSchema };
+export {
+  ConnectEmailSchema,
+  DisconnectEmailSchema,
+  ConnectAppleSchema,
+  ConnectGoogleSchema,
+};
