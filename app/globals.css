@@ -4,6 +4,10 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+  --color-bps-blue: #0082ca;
+  --color-bps-green: #68bd45;
+  --color-bps-orange: #f28b00;
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
