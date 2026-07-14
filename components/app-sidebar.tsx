@@ -31,11 +31,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             >
               <a href="#">
                 <Image
-                  src={"/android-chrome-512x512.png"}
-                  alt="Badan Pusat Statistik"
-                  className="!size-5"
-                  width={24}
-                  height={24}
+                  src={"/logo.svg"}
+                  alt="Allstats Hub"
+                  className="!size-8"
+                  width={36}
+                  height={36}
                 />
                 <span className="text-base font-semibold">{APP_NAME}</span>
               </a>
