@@ -25,10 +25,11 @@ import dynamic from "next/dynamic";
 import { Skeleton } from "@/components/ui/skeleton";
 import Link from "next/link";
 import { Topic } from "@/types/topic";
-import { Notification } from "@/types/notification";
+import { GeneratedNotification, Notification } from "@/types/notification";
 import TopicSelect from "./form/topic";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
+import GenerateNotification from "./ai-generate";
 
 const Editor = dynamic(() => import("@/components/blocks/editor-x/editor"), {
   ssr: false,
@@ -51,6 +52,7 @@ const NotificationForm = ({
   data?: Omit<Notification, "timestamp" | "notification_sent">;
 }>) => {
   const router = useRouter();
+  const [editorKey, setEditorKey] = useState<string>();
   const [editorState, setEditorState] = useState<
     SerializedEditorState | undefined
   >(data?.content ? htmlToLexical(data?.content) : undefined);
@@ -67,12 +69,24 @@ const NotificationForm = ({
     },
   });
 
+  const selectGenerateNotification = async (data: GeneratedNotification) => {
+    form.setValue("push_notification", true);
+    form.setValue("short_description", data.id_short_description);
+    form.setValue("title", data.id_title);
+    form.setValue("content", data.id_description);
+    setEditorKey(undefined);
+    setTimeout(() => {
+      setEditorKey(data.type);
+      setEditorState(htmlToLexical(data.id_description));
+    }, 100);
+  };
+
   const update = async (
     id: number,
     data: Omit<
       Notification,
       "id" | "timestamp" | "notification_sent" | "topics"
-    > & { topics?: number[] | undefined }
+    > & { topics?: number[] | undefined },
   ) => {
     const toastID = toast.loading("Updating notification...", {
       position: "top-center",
@@ -100,7 +114,7 @@ const NotificationForm = ({
       "id" | "timestamp" | "notification_sent" | "topics"
     > & {
       topics?: number[];
-    }
+    },
   ) => {
     // Send the form data to your API or perform any other async action.
     const toastID = toast.loading("Creating notification...", {
@@ -131,72 +145,40 @@ const NotificationForm = ({
   };
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-        <FormField
-          control={form.control}
-          name="title"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Title</FormLabel>
-              <FormControl>
-                <Input placeholder="Notification Title" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="content"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Content</FormLabel>
-              <FormControl>
-                <Editor
-                  {...field}
-                  editorSerializedState={editorState}
-                  onSerializedChange={(value) => setEditorState(value)}
-                  onChange={(value) =>
-                    form.setValue("content", lexicalToHtml(value.toJSON()))
-                  }
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="push_notification"
-          render={() => (
-            <FormItem className="flex flex-row items-center space-x-2 space-y-0">
-              <FormControl>
-                <Switch
-                  checked={form.watch("push_notification")}
-                  onCheckedChange={(value) =>
-                    form.setValue("push_notification", value)
-                  }
-                />
-              </FormControl>
-              <FormLabel>Push Notification</FormLabel>
-            </FormItem>
-          )}
-        />
-        {form.watch("push_notification") && (
+    <>
+      {!data && <GenerateNotification onSelect={selectGenerateNotification} />}
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
           <FormField
             control={form.control}
-            name="topics"
+            name="title"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>User&apos;s Topic</FormLabel>
+                <FormLabel>Title</FormLabel>
                 <FormControl>
-                  <TopicSelect
-                    topics={topics}
-                    values={field.value}
+                  <Input placeholder="Notification Title" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="content"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Content</FormLabel>
+                <FormControl>
+                  <Editor
+                    key={editorKey}
+                    {...field}
+                    editorSerializedState={editorState}
+                    onSerializedChange={(value) => setEditorState(value)}
                     onChange={(value) => {
-                      const selected = value.map((v) => v);
-                      form.setValue("topics", selected);
+                      return form.setValue(
+                        "content",
+                        lexicalToHtml(value.toJSON()),
+                      );
                     }}
                   />
                 </FormControl>
@@ -204,74 +186,113 @@ const NotificationForm = ({
               </FormItem>
             )}
           />
-        )}
-        {form.watch("push_notification") && (
           <FormField
             control={form.control}
-            name="short_description"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Short Description</FormLabel>
+            name="push_notification"
+            render={() => (
+              <FormItem className="flex flex-row items-center space-x-2 space-y-0">
                 <FormControl>
-                  <Textarea
-                    placeholder="Short Description"
-                    {...field}
-                    maxLength={100}
+                  <Switch
+                    checked={form.watch("push_notification")}
+                    onCheckedChange={(value) =>
+                      form.setValue("push_notification", value)
+                    }
                   />
                 </FormControl>
-                <p className="text-right text-sm text-muted-foreground mt-1">
-                  {field.value?.length ?? 0}/100
-                </p>
-                <FormMessage />
+                <FormLabel>Push Notification</FormLabel>
               </FormItem>
             )}
           />
-        )}
-        <div className="inline-flex gap-2">
-          <Button
-            type="submit"
-            disabled={
-              form.formState.disabled ||
-              form.formState.isSubmitting ||
-              form.formState.isLoading
-            }
-            aria-disabled={
-              form.formState.disabled ||
-              form.formState.isSubmitting ||
-              form.formState.isLoading
-            }
-            className="relative"
-          >
-            {form.formState.disabled ||
-              form.formState.isSubmitting ||
-              (form.formState.isLoading && (
-                <div className="absolute w-full h-full bg-black rounded-md flex justify-center items-center">
-                  <IconLoader2 className="animate-spin" />
-                </div>
-              ))}
-            {data ? "Update Notification" : "Create Notification"}
-          </Button>
-          <Button
-            type="button"
-            disabled={
-              form.formState.disabled ||
-              form.formState.isSubmitting ||
-              form.formState.isLoading
-            }
-            aria-disabled={
-              form.formState.disabled ||
-              form.formState.isSubmitting ||
-              form.formState.isLoading
-            }
-            variant="secondary"
-            className="relative"
-            asChild
-          >
-            <Link href="/dashboard/notifications">Cancel</Link>
-          </Button>
-        </div>
-      </form>
-    </Form>
+          {form.watch("push_notification") && (
+            <FormField
+              control={form.control}
+              name="topics"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>User&apos;s Topic</FormLabel>
+                  <FormControl>
+                    <TopicSelect
+                      topics={topics}
+                      values={field.value}
+                      onChange={(value) => {
+                        const selected = value.map((v) => v);
+                        form.setValue("topics", selected);
+                      }}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
+          {form.watch("push_notification") && (
+            <FormField
+              control={form.control}
+              name="short_description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Short Description</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="Short Description"
+                      {...field}
+                      maxLength={100}
+                    />
+                  </FormControl>
+                  <p className="text-right text-sm text-muted-foreground mt-1">
+                    {field.value?.length ?? 0}/100
+                  </p>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
+          <div className="inline-flex gap-2">
+            <Button
+              type="submit"
+              disabled={
+                form.formState.disabled ||
+                form.formState.isSubmitting ||
+                form.formState.isLoading
+              }
+              aria-disabled={
+                form.formState.disabled ||
+                form.formState.isSubmitting ||
+                form.formState.isLoading
+              }
+              className="relative"
+            >
+              {form.formState.disabled ||
+                form.formState.isSubmitting ||
+                (form.formState.isLoading && (
+                  <div className="absolute w-full h-full bg-black rounded-md flex justify-center items-center">
+                    <IconLoader2 className="animate-spin" />
+                  </div>
+                ))}
+              {data ? "Update Notification" : "Create Notification"}
+            </Button>
+            <Button
+              type="button"
+              disabled={
+                form.formState.disabled ||
+                form.formState.isSubmitting ||
+                form.formState.isLoading
+              }
+              aria-disabled={
+                form.formState.disabled ||
+                form.formState.isSubmitting ||
+                form.formState.isLoading
+              }
+              variant="secondary"
+              className="relative"
+              asChild
+            >
+              <Link href="/dashboard/notifications">Cancel</Link>
+            </Button>
+          </div>
+        </form>
+      </Form>
+    </>
   );
 };
 
