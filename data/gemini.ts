@@ -65,6 +65,7 @@ Ketentuan Output:
 
 2. Untuk setiap tipe penyampaian bahasa, sediakan konten dalam format:
    - Title (Judul Iklan)
+     * KETENTUAN KHUSUS TITLE: panjangnya MAKSIMAL 50 karakter, boleh menggunakan emoji yang relevan.
    - Description (Deskripsi/Body Copy Iklan)
    - Short Description: Konten khusus untuk PUSH NOTIFICATION di ponsel pengguna. 
      * KETENTUAN KHUSUS SHORT DESCRIPTION: Wajib menggunakan gaya penulisan yang memicu rasa penasaran (curiosity gap), langsung ke inti (punchy), menggunakan emoji yang relevan, dan panjangnya MAKSIMAL 100 karakter (termasuk spasi dan emoji) agar tidak terpotong di layar ponsel.
