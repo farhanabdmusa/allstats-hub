@@ -18,12 +18,16 @@ export async function getNotifications(
   const notifications = await prisma.notification.findMany({
     select: {
       id: true,
-      title: true,
-      content: true,
+      id_title: true,
+      id_content: true,
+      id_short_description: true,
+      en_title: true,
+      en_content: true,
+      en_short_description: true,
       push_notification: true,
       timestamp: true,
       notification_sent: true,
-      short_description: true,
+      mfd: true,
       notification_topic: {
         select: {
           topic: true,
@@ -46,15 +50,15 @@ export async function createNotification(
   try {
     const { topics, push_notification, ...rest } = data;
     if (
-      push_notification &&
-      (!data.short_description || data.short_description.length === 0)
+      (push_notification && (data.id_short_description?.length ?? 0) === 0) ||
+      (push_notification && (data.en_short_description?.length ?? 0) === 0)
     ) {
       throw new Error(
         "Short description is required when push notification is enabled",
       );
     }
     const create = await prisma.notification.create({
-      select: { id: true, title: true },
+      select: { id: true, id_title: true },
       data: {
         ...rest,
         push_notification,
@@ -69,6 +73,13 @@ export async function createNotification(
       },
     });
 
+    const payload = {
+      id_title: data.id_title,
+      id_body: data.id_short_description!,
+      en_title: data.en_title,
+      en_body: data.en_short_description!,
+    };
+
     if (data.push_notification) {
       if (data.topics?.length ?? 0 > 0) {
         const topics = await prisma.topic.findMany({
@@ -80,10 +91,7 @@ export async function createNotification(
         });
         const send = await PushNotificationService.sendNotificationToTopic({
           topics: topics.map((e) => e.name),
-          payload: {
-            title: data.title,
-            body: data.short_description!,
-          },
+          payload: payload,
         });
         if (send) {
           await prisma.notification.update({
@@ -94,36 +102,47 @@ export async function createNotification(
           });
         }
       } else {
-        const listTokens = await prisma.user_device.findMany({
+        const tokens = await prisma.user_device.findMany({
           select: {
             fcm_token: true,
+            user: {
+              select: {
+                user_preference: {
+                  select: { lang: true },
+                },
+              },
+            },
           },
           where: {
             fcm_token: { not: null },
           },
         });
-        if (listTokens.length > 0) {
-          const send = await PushNotificationService.sendNotificationMultiToken(
-            listTokens.map((user) => user.fcm_token) as string[],
-            {
-              title: data.title,
-              body: data.short_description!,
+
+        const idTokens = tokens
+          .filter((e) => e.user?.user_preference?.lang == "id")
+          .map((e) => e.fcm_token!);
+        const enTokens = tokens
+          .filter((e) => e.user?.user_preference?.lang == "en")
+          .map((e) => e.fcm_token!);
+
+        const send = await PushNotificationService.sendNotificationMultiToken({
+          idTokens: idTokens,
+          enTokens: enTokens,
+          payload: payload,
+        });
+        if (send) {
+          await prisma.notification.update({
+            where: { id: create.id },
+            data: {
+              notification_sent: new Date(),
             },
-          );
-          if (send) {
-            await prisma.notification.update({
-              where: { id: create.id },
-              data: {
-                notification_sent: new Date(),
-              },
-            });
-          }
+          });
         }
       }
     }
 
     return {
-      title: create.title,
+      title: create.id_title,
     };
   } catch (error) {
     console.error("Failed to create notification:", error);
@@ -134,8 +153,13 @@ export async function createNotification(
 export async function getNotification(id: number) {
   return prisma.notification.findUnique({
     select: {
-      title: true,
-      content: true,
+      id_title: true,
+      id_content: true,
+      id_short_description: true,
+      en_title: true,
+      en_content: true,
+      en_short_description: true,
+      mfd: true,
       push_notification: true,
       notification_topic: {
         select: {
@@ -184,7 +208,6 @@ export async function deleteNotification(id: number) {
   try {
     await prisma.notification.delete({
       where: { id },
-      select: { title: true },
     });
     return true;
   } catch (error) {
@@ -219,6 +242,14 @@ export async function resendNotification(id: number) {
     if (!notification.push_notification) {
       throw new Error("This notification doesn't a push notification");
     }
+
+    const payload = {
+      id_title: notification.id_title,
+      id_body: notification.id_short_description!,
+      en_title: notification.en_title,
+      en_body: notification.en_short_description!,
+    };
+
     if (notification.push_notification) {
       if (notification.notification_topic?.length ?? 0 > 0) {
         const topics = await prisma.topic.findMany({
@@ -228,12 +259,10 @@ export async function resendNotification(id: number) {
             },
           },
         });
+
         const send = await PushNotificationService.sendNotificationToTopic({
           topics: topics.map((e) => e.name),
-          payload: {
-            title: notification.title,
-            body: notification.short_description!,
-          },
+          payload: payload,
         });
         if (send) {
           await prisma.notification.update({
@@ -244,34 +273,45 @@ export async function resendNotification(id: number) {
           });
         }
         return send;
-      } else {
-        const listTokens = await prisma.user_device.findMany({
-          select: {
-            fcm_token: true,
+      }
+
+      const tokens = await prisma.user_device.findMany({
+        select: {
+          fcm_token: true,
+          user: {
+            select: {
+              user_preference: {
+                select: { lang: true },
+              },
+            },
           },
-          where: {
-            fcm_token: { not: null },
+        },
+        where: {
+          fcm_token: { not: null },
+        },
+      });
+
+      const idTokens = tokens
+        .filter((e) => e.user?.user_preference?.lang == "id")
+        .map((e) => e.fcm_token!);
+      const enTokens = tokens
+        .filter((e) => e.user?.user_preference?.lang == "en")
+        .map((e) => e.fcm_token!);
+
+      const send = await PushNotificationService.sendNotificationMultiToken({
+        enTokens: enTokens,
+        idTokens: idTokens,
+        payload: payload,
+      });
+      if (send) {
+        await prisma.notification.update({
+          where: { id: notification.id },
+          data: {
+            notification_sent: new Date(),
           },
         });
-        if (listTokens.length > 0) {
-          const send = await PushNotificationService.sendNotificationMultiToken(
-            listTokens.map((user) => user.fcm_token) as string[],
-            {
-              title: notification.title,
-              body: notification.short_description!,
-            },
-          );
-          if (send) {
-            await prisma.notification.update({
-              where: { id: notification.id },
-              data: {
-                notification_sent: new Date(),
-              },
-            });
-          }
-          return send;
-        }
       }
+      return send;
     }
   } catch (error) {
     console.error("Failed to resend notification:", error);

@@ -2,13 +2,17 @@ import { Topic } from "./topic";
 
 export interface Notification {
   id: number;
-  title: string;
-  content: string;
+  id_title: string;
+  id_content: string;
+  id_short_description?: string | null;
+  en_title: string;
+  en_content: string;
+  en_short_description?: string | null;
+  mfd?: string | null;
   notification_topic?: { topic: Topic }[];
   push_notification: boolean;
   timestamp: Date;
   notification_sent?: Date | null;
-  short_description?: string | null;
 }
 
 export interface GeneratedNotification {

@@ -43,7 +43,7 @@ const TopicSelect = ({
         return [...values, topic.id];
       }
     },
-    [topics, values]
+    [topics, values],
   );
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -104,7 +104,7 @@ const TopicSelect = ({
                       "ml-auto",
                       values.find((v) => v === topic.id)
                         ? "opacity-100"
-                        : "opacity-0"
+                        : "opacity-0",
                     )}
                   />
                 </CommandItem>

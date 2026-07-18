@@ -57,6 +57,7 @@
     "firebase-admin": "^13.5.0",
     "google-auth-library": "^10.9.0",
     "jose": "^6.0.12",
+    "jsonwebtoken": "^9.0.3",
     "katex": "^0.16.22",
     "lexical": "^0.34.0",
     "lodash-es": "^4.17.21",

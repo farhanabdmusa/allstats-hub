@@ -59,14 +59,18 @@ model user_like_product {
 }
 
 model notification {
-  id                 Int                  @id(map: "notification_pk") @default(autoincrement())
-  title              String               @db.VarChar
-  content            String
-  timestamp          DateTime             @default(now()) @db.Timestamptz(6)
-  push_notification  Boolean              @default(false)
-  notification_sent  DateTime?            @db.Timestamptz(6)
-  short_description  String?              @db.VarChar
-  notification_topic notification_topic[]
+  id                   Int                  @id(map: "notification_pk") @default(autoincrement())
+  id_title             String               @db.VarChar
+  id_content           String
+  timestamp            DateTime             @default(now()) @db.Timestamptz(6)
+  push_notification    Boolean              @default(false)
+  notification_sent    DateTime?            @db.Timestamptz(6)
+  id_short_description String?              @db.VarChar
+  en_title             String               @db.VarChar
+  en_content           String
+  en_short_description String?              @db.VarChar
+  mfd                  String?              @db.Char(4)
+  notification_topic   notification_topic[]
 }
 
 model notification_topic {
