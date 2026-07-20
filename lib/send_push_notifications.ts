@@ -237,4 +237,57 @@ export class PushNotificationService {
       throw error;
     }
   }
+
+  /**
+   * Sends a notification to all users.
+   */
+  static async sendNotificationToAllUsers({
+    mfd,
+    payload,
+  }: Readonly<{
+    mfd?: string;
+    payload: PushNotificationPayload;
+  }>): Promise<boolean> {
+    try {
+      const allUsersCondition = "'all_users' in topics";
+      const mfdCondition = mfd ? `'mfd_${mfd}' in topics` : undefined;
+
+      // Send notification for Indonesian Users
+      const idBaseMessage = this.buildBaseMessage("id", payload);
+      const idLangConditions = "'lang_id' in topics";
+      const idConditions = [allUsersCondition, idLangConditions, mfdCondition];
+
+      const idMessage: ConditionMessage = {
+        condition: idConditions.filter(Boolean).join(" && "),
+        ...idBaseMessage,
+      };
+
+      const idResponse = await fcm.send(idMessage);
+      console.log(
+        "Topic notification for Indonesian Users dispatched effectively:",
+        idResponse,
+      );
+
+      // Send notification for English Users
+      const enBaseMessage = this.buildBaseMessage("en", payload);
+      const enLangConditions = "'lang_en' in topics";
+      const enConditions = [allUsersCondition, enLangConditions, mfdCondition];
+
+      const enMessage: ConditionMessage = {
+        condition: enConditions.filter(Boolean).join(" && "),
+        ...enBaseMessage,
+      };
+
+      const enResponse = await fcm.send(enMessage);
+      console.log(
+        "Topic notification for English Users dispatched effectively:",
+        enResponse,
+      );
+
+      return true;
+    } catch (error) {
+      console.error("Failed executing FCM topic dispatch:", error);
+      throw error;
+    }
+  }
 }

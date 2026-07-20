@@ -102,32 +102,8 @@ export async function createNotification(
           });
         }
       } else {
-        const tokens = await prisma.user_device.findMany({
-          select: {
-            fcm_token: true,
-            user: {
-              select: {
-                user_preference: {
-                  select: { lang: true },
-                },
-              },
-            },
-          },
-          where: {
-            fcm_token: { not: null },
-          },
-        });
-
-        const idTokens = tokens
-          .filter((e) => e.user?.user_preference?.lang == "id")
-          .map((e) => e.fcm_token!);
-        const enTokens = tokens
-          .filter((e) => e.user?.user_preference?.lang == "en")
-          .map((e) => e.fcm_token!);
-
-        const send = await PushNotificationService.sendNotificationMultiToken({
-          idTokens: idTokens,
-          enTokens: enTokens,
+        const send = await PushNotificationService.sendNotificationToAllUsers({
+          mfd: data.mfd ?? undefined,
           payload: payload,
         });
         if (send) {
@@ -277,32 +253,8 @@ export async function resendNotification(id: number): Promise<boolean> {
       return send;
     }
 
-    const tokens = await prisma.user_device.findMany({
-      select: {
-        fcm_token: true,
-        user: {
-          select: {
-            user_preference: {
-              select: { lang: true },
-            },
-          },
-        },
-      },
-      where: {
-        fcm_token: { not: null },
-      },
-    });
-
-    const idTokens = tokens
-      .filter((e) => e.user?.user_preference?.lang == "id")
-      .map((e) => e.fcm_token!);
-    const enTokens = tokens
-      .filter((e) => e.user?.user_preference?.lang == "en")
-      .map((e) => e.fcm_token!);
-
-    const send = await PushNotificationService.sendNotificationMultiToken({
-      enTokens: enTokens,
-      idTokens: idTokens,
+    const send = await PushNotificationService.sendNotificationToAllUsers({
+      mfd: notification.mfd ?? undefined,
       payload: payload,
     });
     if (send) {
@@ -313,7 +265,7 @@ export async function resendNotification(id: number): Promise<boolean> {
         },
       });
     }
-    return send.success;
+    return send;
   } catch (error) {
     console.error("Failed to resend notification:", error);
     throw new Error("Failed to resend notification");
