@@ -72,7 +72,7 @@ export function Plugins({}) {
     <div className="relative">
       <ToolbarPlugin>
         {() => (
-          <div className="vertical-align-middle sticky top-0 z-10 flex gap-2 overflow-auto border-b p-1">
+          <div className="vertical-align-middle sticky top-0 z-10 flex gap-2 overflow-auto border-b p-1 [scrollbar-width:none] [&::-webkit-scrollbar]">
             <HistoryToolbarPlugin />
             <Separator orientation="vertical" className="h-8" />
             <BlockFormatDropDown>
