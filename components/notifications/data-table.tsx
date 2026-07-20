@@ -68,7 +68,7 @@ import {
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
 import { toast } from "sonner";
-import { Card, CardContent } from "@/components/ui/card";
+import ViewNotification from "./view-notification";
 
 const columns: ColumnDef<Notification>[] = [
   {
@@ -82,39 +82,14 @@ const columns: ColumnDef<Notification>[] = [
     enableSorting: false,
   },
   {
-    accessorKey: "title",
+    accessorKey: "id_title",
     header: "Title",
     enableSorting: true,
   },
   {
-    accessorKey: "content",
+    accessorKey: "id_content",
     header: "Content",
-    cell: ({ row }) => (
-      <Dialog>
-        <DialogTrigger asChild>
-          <Button variant="secondary" size="sm">
-            View Content
-          </Button>
-        </DialogTrigger>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{row.original.id_title}</DialogTitle>
-            <hr />
-            {row.original.id_short_description && (
-              <Card className="py-2 rounded-md shadow-xs">
-                <CardContent className="px-2">
-                  <p className="text-sm">{row.original.id_short_description}</p>
-                </CardContent>
-              </Card>
-            )}
-            <DialogDescription
-              className="text-gray-800"
-              dangerouslySetInnerHTML={{ __html: row.original.id_content }}
-            />
-          </DialogHeader>
-        </DialogContent>
-      </Dialog>
-    ),
+    cell: ({ row }) => <ViewNotification notification={row.original} />,
     enableSorting: false,
   },
   {
