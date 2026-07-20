@@ -1,6 +1,7 @@
 import NotificationForm from "@/components/notifications/form";
 import { SiteHeader } from "@/components/site-header";
 import { SidebarInset } from "@/components/ui/sidebar";
+import getDomain from "@/data/bps_mfd";
 import { getNotification } from "@/data/notifications";
 import { getAllTopic } from "@/data/topic";
 import { notFound } from "next/navigation";
@@ -19,6 +20,7 @@ const EditNotificationPage = async ({
     notFound();
   }
   const topics = await getAllTopic();
+  const domains = await getDomain();
   return (
     <SidebarInset>
       <SiteHeader title="Edit Notification" />
@@ -27,6 +29,7 @@ const EditNotificationPage = async ({
           <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6 px-4 lg:px-6">
             <NotificationForm
               data={{ id: notificationId, ...notification }}
+              domains={domains.data ?? []}
               topics={topics}
             />
           </div>
