@@ -98,18 +98,18 @@ const columns: ColumnDef<Notification>[] = [
         </DialogTrigger>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{row.original.title}</DialogTitle>
+            <DialogTitle>{row.original.id_title}</DialogTitle>
             <hr />
-            {row.original.short_description && (
+            {row.original.id_short_description && (
               <Card className="py-2 rounded-md shadow-xs">
                 <CardContent className="px-2">
-                  <p className="text-sm">{row.original.short_description}</p>
+                  <p className="text-sm">{row.original.id_short_description}</p>
                 </CardContent>
               </Card>
             )}
             <DialogDescription
               className="text-gray-800"
-              dangerouslySetInnerHTML={{ __html: row.original.content }}
+              dangerouslySetInnerHTML={{ __html: row.original.id_content }}
             />
           </DialogHeader>
         </DialogContent>
