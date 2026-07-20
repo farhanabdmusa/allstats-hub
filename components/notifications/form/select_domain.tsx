@@ -19,7 +19,6 @@ import {
 } from "@/components/ui/popover";
 import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
-import { IconX } from "@tabler/icons-react";
 import { BPSDomain, getDomainLevel } from "@/types/bps_domain";
 
 const SelectDomain = ({
