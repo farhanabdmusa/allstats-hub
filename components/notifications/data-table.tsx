@@ -326,6 +326,9 @@ export function DataTable() {
     state: {
       sorting,
       pagination,
+      columnPinning: {
+        right: ["actions"],
+      },
     },
     getRowId: (row) => row.id.toString(),
     enableRowSelection: true,
@@ -421,7 +424,13 @@ export function DataTable() {
                   className="relative z-0 data-[dragging=true]:z-10 data-[dragging=true]:opacity-80"
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
+                    <TableCell
+                      key={cell.id}
+                      className={cn({
+                        "right-0 sticky z-10 bg-white shadow":
+                          cell.column.getIsPinned() == "right",
+                      })}
+                    >
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext(),
