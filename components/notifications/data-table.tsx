@@ -106,6 +106,19 @@ const columns: ColumnDef<Notification>[] = [
     ),
   },
   {
+    accessorKey: "mfd",
+    header: "User's MFD",
+    cell: ({ row }) => (
+      <div className="flex justify-center items-center">
+        {row.original.mfd ? (
+          <Badge>{row.original.mfd}</Badge>
+        ) : (
+          <Badge>All Users</Badge>
+        )}
+      </div>
+    ),
+  },
+  {
     accessorKey: "topics",
     header: "Topics",
     cell: ({ row }) => {
