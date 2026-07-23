@@ -5,7 +5,7 @@ import createApiResponse from "./lib/create_api_response";
 import { AUDIENCE } from "./constants/v1/api";
 import { JOSEError, JWTExpired } from "jose/errors";
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   if (publicApiRoutes.includes(pathname)) {
