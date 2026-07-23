@@ -8,7 +8,9 @@ import { JOSEError, JWTExpired } from "jose/errors";
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  if (publicApiRoutes.includes(pathname)) {
+  const isNextAuthRoute = pathname.startsWith("/api/auth");
+
+  if (publicApiRoutes.includes(pathname) || isNextAuthRoute) {
     return NextResponse.next();
   }
 

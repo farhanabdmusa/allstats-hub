@@ -1,6 +1,9 @@
 import { AppSidebar } from "@/components/app-sidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
+import { authOptions } from "@/lib/auth";
+import { getServerSession } from "next-auth";
 import { Metadata } from "next";
+import { redirect } from "next/navigation";
 
 export const metadata: Metadata = {
   robots: {
@@ -10,11 +13,17 @@ export const metadata: Metadata = {
   description: "Allstats Hub",
 };
 
-export default function Page({
+export default async function Layout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const session = await getServerSession(authOptions);
+
+  if (!session) {
+    redirect("/authentication");
+  }
+
   return (
     <SidebarProvider
       style={
