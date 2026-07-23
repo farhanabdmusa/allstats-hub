@@ -49,7 +49,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavSecondary items={LIST_MENU.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={LIST_MENU.user} />
+        <NavUser />
       </SidebarFooter>
     </Sidebar>
   );
