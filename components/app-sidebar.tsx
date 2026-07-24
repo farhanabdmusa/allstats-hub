@@ -45,6 +45,7 @@ export function AppSidebar({
                   className="!size-8"
                   width={36}
                   height={36}
+                  loading="eager"
                 />
                 <span className="text-base font-semibold">{APP_NAME}</span>
               </a>

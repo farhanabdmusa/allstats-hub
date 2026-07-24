@@ -18,6 +18,7 @@ const AuthenticationPage = async ({
               className="!size-8"
               width={36}
               height={36}
+              loading="eager"
             />
           </div>
           Allstats Hub
