@@ -1,6 +1,7 @@
 import NextAuth, { AuthOptions } from "next-auth";
 import type { Provider } from "next-auth/providers/index";
 import prisma from "@/lib/prisma";
+import { getCurrentDateTime } from "./jakarta_datetime";
 
 const pstIssuer = process.env.PST_ISSUER ?? "https://sso-pst.bps.go.id";
 const pstAuthorizationUrl =
@@ -86,6 +87,8 @@ export const authOptions: AuthOptions = {
         id?: string | null;
       };
     }) {
+      console.log(new Date());
+      console.log(getCurrentDateTime());
       const email = user.email?.trim().toLowerCase();
       const name = user.name?.trim().toLowerCase();
       const uuid = user.id?.trim();
@@ -122,7 +125,7 @@ export const authOptions: AuthOptions = {
           email: email,
         },
         data: {
-          last_signin_at: new Date(),
+          last_signin_at: getCurrentDateTime(),
         },
       });
 

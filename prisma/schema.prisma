@@ -133,10 +133,13 @@ model user_device {
 }
 
 model user_admin {
-  id             Int       @id(map: "user_admin_pk") @default(autoincrement())
-  uuid           String    @unique(map: "user_admin_unique") @db.VarChar
-  email          String    @unique(map: "user_admin_unique_1") @db.VarChar
-  name           String    @db.VarChar
-  is_admin       Boolean   @default(false)
-  last_signin_at DateTime? @db.Timestamp(6)
+  id               Int       @id(map: "user_admin_pk") @default(autoincrement())
+  uuid             String    @unique(map: "user_admin_unique") @db.VarChar
+  email            String    @unique(map: "user_admin_unique_1") @db.VarChar
+  name             String    @db.VarChar
+  is_admin         Boolean   @default(false)
+  last_signin_at   DateTime? @db.Timestamp(6)
+  admin_updated_by String?   @db.VarChar
+  admin_updated_at DateTime? @db.Timestamp(6)
+  created_at       DateTime  @default(now()) @db.Timestamp(6)
 }
