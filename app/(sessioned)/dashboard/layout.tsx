@@ -20,9 +20,10 @@ export default async function Layout({
 }>) {
   const session = await getServerSession(authOptions);
 
-  if (!session) {
+  if (!session?.user) {
     redirect("/authentication");
   }
+  const user = session.user;
 
   return (
     <SidebarProvider
@@ -33,7 +34,7 @@ export default async function Layout({
         } as React.CSSProperties
       }
     >
-      <AppSidebar variant="inset" />
+      <AppSidebar variant="inset" user={user} />
       {children}
     </SidebarProvider>
   );

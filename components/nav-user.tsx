@@ -1,6 +1,6 @@
 "use client";
 
-import { signOut, useSession } from "next-auth/react";
+import { signOut } from "next-auth/react";
 
 import {
   IconCreditCard,
@@ -27,9 +27,15 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 
-export function NavUser() {
-  const { data } = useSession();
-  const user = data!.user!;
+export function NavUser({
+  user,
+}: Readonly<{
+  user: {
+    name?: string | null;
+    email?: string | null;
+    image?: string | null;
+  };
+}>) {
   const { isMobile } = useSidebar();
 
   return (

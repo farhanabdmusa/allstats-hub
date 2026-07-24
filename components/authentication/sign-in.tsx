@@ -12,8 +12,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { AlertCircleIcon } from "lucide-react";
 
-const SignInSection = () => {
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+
+const SignInSection = ({ error }: Readonly<{ error?: string }>) => {
   const router = useRouter();
   const { data: session } = useSession();
 
@@ -28,9 +31,16 @@ const SignInSection = () => {
       <Card>
         <CardHeader className="text-center">
           <CardTitle className="text-xl">Welcome back</CardTitle>
-          <CardDescription>Login with your SSO PST Account</CardDescription>
+          <CardDescription>Sign in with your SSO PST Account</CardDescription>
         </CardHeader>
         <CardContent>
+          {error && (
+            <Alert variant="destructive" className="max-w-md mb-4">
+              <AlertCircleIcon />
+              <AlertTitle>Sign In Failed</AlertTitle>
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
           <Button
             className="w-full"
             variant="outline"

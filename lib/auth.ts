@@ -1,5 +1,6 @@
-import NextAuth from "next-auth";
+import NextAuth, { AuthOptions } from "next-auth";
 import type { Provider } from "next-auth/providers/index";
+import prisma from "@/lib/prisma";
 
 const pstIssuer = process.env.PST_ISSUER ?? "https://sso-pst.bps.go.id";
 const pstAuthorizationUrl =
@@ -65,12 +66,69 @@ const pstProvider: Provider = {
   },
 };
 
-export const authOptions = {
+export const authOptions: AuthOptions = {
   secret: process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET,
   session: {
     strategy: "jwt" as const,
   },
+
   providers: [pstProvider],
+  pages: {
+    error: "/authentication",
+  },
+  callbacks: {
+    async signIn({
+      user,
+    }: {
+      user: {
+        email?: string | null;
+        name?: string | null;
+        id?: string | null;
+      };
+    }) {
+      const email = user.email?.trim().toLowerCase();
+      const name = user.name?.trim().toLowerCase();
+      const uuid = user.id?.trim();
+
+      if (!email || !name || !uuid) {
+        throw new Error("Unknown User");
+      }
+
+      const adminUser = await prisma.user_admin.findUnique({
+        where: {
+          email,
+        },
+        select: {
+          is_admin: true,
+        },
+      });
+
+      if (adminUser == null) {
+        await prisma.user_admin.create({
+          data: {
+            email: email,
+            name: name,
+            uuid: uuid,
+          },
+        });
+      }
+
+      if (!adminUser?.is_admin) {
+        throw new Error("Unauthorized User");
+      }
+
+      prisma.user_admin.update({
+        where: {
+          email: email,
+        },
+        data: {
+          last_signin_at: new Date(),
+        },
+      });
+
+      return true;
+    },
+  },
 };
 
 export const handler = NextAuth(authOptions);
