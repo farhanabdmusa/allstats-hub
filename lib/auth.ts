@@ -83,6 +83,8 @@ export const authOptions: AuthOptions = {
   providers: [pstProvider],
   pages: {
     error: "/authentication",
+    signIn: "/authentication",
+    signOut: "/authentication/signout",
   },
   callbacks: {
     async signIn({ user }) {
