@@ -1,0 +1,51 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: dockerfile.local
+      args:
+        FIREBASE_PROJECT_ID: ${FIREBASE_PROJECT_ID:-}
+        FIREBASE_CLIENT_EMAIL: ${FIREBASE_CLIENT_EMAIL:-}
+        FIREBASE_PRIVATE_KEY: ${FIREBASE_PRIVATE_KEY:-}
+        FIREBASE_GCLIENT_ID: ${FIREBASE_GCLIENT_ID:-}
+        GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+        SIGNATURE_SECRET_KEY: ${SIGNATURE_SECRET_KEY:-}
+        NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:-}
+        NEXTAUTH_URL: ${NEXTAUTH_URL:-}
+    container_name: allstats-backend
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/allstats?schema=public
+      PORT: 3000
+      NODE_ENV: development
+      JWT_SECRET: change-me
+      NEXTAUTH_SECRET: change-me
+      NEXTAUTH_URL: http://localhost:3000
+      FIREBASE_PROJECT_ID: ${FIREBASE_PROJECT_ID:-}
+      FIREBASE_CLIENT_EMAIL: ${FIREBASE_CLIENT_EMAIL:-}
+      FIREBASE_PRIVATE_KEY: ${FIREBASE_PRIVATE_KEY:-}
+      FIREBASE_GCLIENT_ID: ${FIREBASE_GCLIENT_ID:-}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+    depends_on:
+      - db
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: sh -c "npx prisma generate && npx prisma db push && npm run dev -- --hostname 0.0.0.0"
+
+  db:
+    image: postgres:16-alpine
+    container_name: allstats-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: allstats
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+volumes:
+  postgres-data:
