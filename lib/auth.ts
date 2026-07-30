@@ -9,6 +9,9 @@ const pstAuthorizationUrl =
 const pstTokenUrl = process.env.PST_TOKEN_URL ?? `${pstIssuer}/oauth/token`;
 const pstUserProfileUrl =
   process.env.PST_USERINFO_URL ?? `${pstIssuer}/api/user`;
+const redirecURI = Buffer.from(process.env.PST_REDIRECT_URI ?? "-").toString(
+  "base64",
+);
 
 const pstProvider: Provider = {
   id: "pst",
@@ -19,12 +22,16 @@ const pstProvider: Provider = {
     params: {
       scope: "read-user",
       response_type: "code",
+      redirect_uri_base64: redirecURI,
+      redirect_uri: undefined,
     },
   },
   token: {
     url: pstTokenUrl,
     params: {
       grant_type: "authorization_code",
+      redirect_uri_base64: redirecURI,
+      redirect_uri: undefined,
     },
   },
   userinfo: {
