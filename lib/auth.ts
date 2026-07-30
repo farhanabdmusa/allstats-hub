@@ -87,10 +87,8 @@ export const authOptions: AuthOptions = {
         id?: string | null;
       };
     }) {
-      console.log(new Date());
-      console.log(getCurrentDateTime());
-      const email = user.email?.trim().toLowerCase();
-      const name = user.name?.trim().toLowerCase();
+      const email = user.email?.trim();
+      const name = user.name?.trim();
       const uuid = user.id?.trim();
 
       if (!email || !name || !uuid) {

@@ -2,9 +2,8 @@
 
 import * as React from "react";
 
-import { NavDocuments } from "@/components/nav-documents";
+import { NavAdminArea } from "@/components/nav-admin-area";
 import { NavMain } from "@/components/nav-main";
-import { NavSecondary } from "@/components/nav-secondary";
 import { NavUser } from "@/components/nav-user";
 import {
   Sidebar,
@@ -55,8 +54,7 @@ export function AppSidebar({
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={LIST_MENU.navMain} />
-        <NavDocuments items={LIST_MENU.documents} />
-        <NavSecondary items={LIST_MENU.navSecondary} className="mt-auto" />
+        <NavAdminArea items={LIST_MENU.adminArea} />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={user} />

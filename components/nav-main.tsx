@@ -35,7 +35,7 @@ export function NavMain({
                   href={item.url}
                   className={cn("transition-colors bg-transparent rounded-md", {
                     "bg-sky-700/25 hover:bg-sky-700/45 hover:text-sky-900":
-                      pathname.startsWith(item.url),
+                      pathname == item.url,
                   })}
                 >
                   {item.icon && <item.icon />}
