@@ -12,7 +12,6 @@ const pstUserProfileUrl =
 const redirecURI = Buffer.from(process.env.PST_REDIRECT_URI ?? "-").toString(
   "base64",
 );
-console.log("🚀 ~ redirecURI:", redirecURI);
 
 const pstProvider: Provider = {
   id: "pst",
@@ -51,7 +50,6 @@ const pstProvider: Provider = {
       }
 
       const payload = await response.json();
-      console.log("🚀 ~ userinfo payload:", payload);
       return payload.data ?? payload.user ?? payload;
     },
   },
@@ -104,7 +102,6 @@ export const authOptions: AuthOptions = {
           is_admin: true,
         },
       });
-      console.log("🚀 ~ adminUser:", adminUser);
 
       if (adminUser == null) {
         await prisma.user_admin.create({
