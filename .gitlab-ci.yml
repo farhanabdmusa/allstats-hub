@@ -1,0 +1,7 @@
+include:
+  - project: template/koderia-template
+    file: .gitlab-ci-mono.yml
+
+default:
+  tags:
+    - shared-okdm
