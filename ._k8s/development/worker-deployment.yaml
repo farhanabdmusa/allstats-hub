@@ -17,7 +17,7 @@ spec:
         - name: devops-pull
       containers:
         - name: allstats-hub-worker
-          image: devops-registry.bps.go.id/dpeps/allstats-hub
+          image: devops-registry.bps.go.id/dpeps/allstats-backend
           command: ["npm", "run", "start", "--", "--hostname", "0.0.0.0"]
           envFrom:
             - secretRef:
