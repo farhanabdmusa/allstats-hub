@@ -1,0 +1,145 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model sign_up_type {
+  id          Int           @id(map: "sign_up_type_pk") @default(autoincrement())
+  name        String        @unique(map: "sign_up_type_unique") @db.VarChar
+  user_device user_device[]
+}
+
+model user {
+  id                  Int                 @id(map: "user_pk") @default(autoincrement())
+  email_pst           String?             @unique(map: "user_unique_email_pst") @db.VarChar
+  name                String?             @db.VarChar
+  email_apple         String?             @unique(map: "user_unique_email_apple") @db.VarChar
+  email_google        String?             @unique(map: "user_unique_email_google") @db.VarChar
+  apple_user_id       String?             @unique(map: "user_unique") @db.VarChar
+  apple_refresh_token String?             @db.VarChar
+  user_device         user_device[]
+  user_like_product   user_like_product[]
+  user_preference     user_preference?
+  user_topic          user_topic[]
+}
+
+model product_type {
+  id                         Int                 @id(map: "product_type_pk") @default(autoincrement())
+  name                       String              @unique(map: "product_type_unique") @db.VarChar
+  like_counter_relation      like_counter[]      @relation("like_counter_product_typeToproduct_type")
+  user_like_product_relation user_like_product[] @relation("user_like_product_product_typeToproduct_type")
+}
+
+model like_counter {
+  id                    Int          @id(map: "like_counter_pk") @default(autoincrement())
+  mfd                   String       @db.VarChar
+  product_type          Int
+  product_id            String       @db.VarChar
+  total                 Int          @default(0)
+  product_type_relation product_type @relation("like_counter_product_typeToproduct_type", fields: [product_type], references: [id], map: "like_counter_product_type_fk")
+
+  @@unique([mfd, product_type, product_id], map: "like_counter_unique")
+}
+
+model user_like_product {
+  id                    Int          @id(map: "like_product_pk") @default(autoincrement())
+  user_id               Int
+  mfd                   String       @db.VarChar
+  product_type          Int
+  product_id            String       @db.VarChar
+  timestamp             DateTime     @default(now()) @db.Timestamptz(6)
+  product_type_relation product_type @relation("user_like_product_product_typeToproduct_type", fields: [product_type], references: [id], map: "like_product_product_type_fk")
+  user                  user         @relation(fields: [user_id], references: [id], onDelete: Cascade, map: "user_like_product_user_fk")
+
+  @@unique([user_id, mfd, product_type, product_id], map: "user_like_product_unique")
+}
+
+model notification {
+  id                   Int                  @id(map: "notification_pk") @default(autoincrement())
+  id_title             String               @db.VarChar
+  id_content           String
+  timestamp            DateTime             @default(now()) @db.Timestamptz(6)
+  push_notification    Boolean              @default(false)
+  notification_sent    DateTime?            @db.Timestamptz(6)
+  id_short_description String?              @db.VarChar
+  en_title             String               @db.VarChar
+  en_content           String
+  en_short_description String?              @db.VarChar
+  mfd                  String?              @db.Char(4)
+  notification_topic   notification_topic[]
+}
+
+model notification_topic {
+  id_notification Int
+  id_topic        Int
+  notification    notification @relation(fields: [id_notification], references: [id], onDelete: Cascade, map: "notification_topic_notification_fk")
+  topic           topic        @relation(fields: [id_topic], references: [id], onDelete: Cascade, map: "notification_topic_topic_fk")
+
+  @@id([id_notification, id_topic], map: "notification_topic_pk")
+}
+
+model topic {
+  id                 Int                  @id(map: "topic_pk") @default(autoincrement())
+  name               String               @unique(map: "topic_unique") @db.VarChar
+  id_display_name    String               @db.VarChar
+  en_display_name    String               @db.VarChar
+  user_select        Boolean              @default(false)
+  notification_topic notification_topic[]
+  user_topic         user_topic[]
+}
+
+model user_preference {
+  id              Int     @id(map: "user_preference_pk") @default(autoincrement())
+  id_user         Int     @unique(map: "user_preference_id_user")
+  lang            String  @db.VarChar
+  domain          String  @default("0000") @db.VarChar
+  topic_selection Boolean @default(false)
+  user            user    @relation(fields: [id_user], references: [id], onDelete: Cascade, map: "user_preference_user_fk")
+}
+
+model user_topic {
+  id_user       Int
+  id_topic      Int
+  subscribed_at DateTime @default(now()) @db.Timestamptz(6)
+  topic         topic    @relation(fields: [id_topic], references: [id], onDelete: Cascade, map: "user_topic_topic_fk")
+  user          user     @relation(fields: [id_user], references: [id], onDelete: Cascade, map: "user_topic_user_fk")
+
+  @@id([id_user, id_topic], map: "user_topic_pk")
+}
+
+model user_device {
+  id_user                  Int?
+  uuid                     String        @id(map: "user_device_pk") @db.VarChar
+  os                       String?       @db.VarChar
+  manufacturer             String?       @db.VarChar
+  device_model             String?       @db.VarChar
+  os_version               String?       @db.VarChar
+  is_virtual               Boolean       @default(false)
+  new_version              Boolean       @default(true)
+  first_session            DateTime      @default(now()) @db.Timestamptz(6)
+  last_session             DateTime      @default(now()) @db.Timestamptz(6)
+  last_ip                  String?       @db.VarChar
+  access_token             String?       @db.VarChar
+  refresh_token            String?       @db.VarChar
+  fcm_token                String?       @db.VarChar
+  refresh_token_expires_at DateTime?     @db.Timestamptz(6)
+  sign_in_type             Int?
+  sign_up_type             sign_up_type? @relation(fields: [sign_in_type], references: [id], map: "user_device_sign_up_type_fk")
+  user                     user?         @relation(fields: [id_user], references: [id], map: "user_device_user_fk")
+}
+
+model user_admin {
+  id               Int       @id(map: "user_admin_pk") @default(autoincrement())
+  uuid             String    @unique(map: "user_admin_unique") @db.VarChar
+  email            String    @unique(map: "user_admin_unique_1") @db.VarChar
+  name             String    @db.VarChar
+  is_admin         Boolean   @default(false)
+  last_signin_at   DateTime? @db.Timestamp(6)
+  admin_updated_by String?   @db.VarChar
+  admin_updated_at DateTime? @db.Timestamp(6)
+  created_at       DateTime  @default(now()) @db.Timestamp(6)
+}

@@ -1,0 +1,76 @@
+import { z } from "zod";
+
+const UserSchema = z.object({
+  uuid: z.string("UUID is required"),
+  name: z.string().optional().nullable(),
+  manufacturer: z.string().optional().nullable(),
+  device_model: z.string().optional(),
+  os: z.string().optional(),
+  os_version: z.string().optional(),
+  is_virtual: z.boolean().optional(),
+  last_ip: z.ipv4().optional().nullable(),
+  fcm_token: z.string().optional().nullable(),
+  first_session: z.string().optional().nullable(),
+  last_session: z.string().optional().nullable(),
+  sign_up_type: z.number().optional().nullable(),
+  new_version: z.boolean().optional().nullable(),
+  lang: z.enum(["id", "en"]),
+  domain: z.string().length(4),
+  topic_selection: z.boolean(),
+});
+
+const UpdateUserPayload = UserSchema.extend({
+  name: z.string().optional().nullable(),
+  uuid: z.string().optional().nullable(),
+  manufacturer: z.string().optional().nullable(),
+  device_model: z.string().optional().nullable(),
+  os: z.string().optional().nullable(),
+  os_version: z.string().optional().nullable(),
+  is_virtual: z.boolean().optional().nullable(),
+  last_ip: z.ipv4().optional().nullable(),
+  lang: z.enum(["id", "en"]).optional().nullable(),
+  domain: z.string().length(4).optional().nullable(),
+  fcm_token: z.string().optional().nullable(),
+  first_session: z.string().optional().nullable(),
+  last_session: z.string().optional().nullable(),
+  sign_up_type: z.number().optional().nullable(),
+  new_version: z.boolean().optional().nullable(),
+  topic_selection: z.boolean().optional().nullable(),
+  topic_selected: z.array(z.number()).optional().nullable(),
+});
+
+const UserTopicPayload = z.object({
+  id: z.number(),
+  timestamp: z.coerce.date(),
+});
+
+const UserPreferencePayload = z.object({
+  mfd: z.string().length(4),
+  lang: z.enum(["id", "en"], { error: "Unknown Language" }),
+  topic_selection: z.boolean().default(false),
+  subscribed_topic: UserTopicPayload.array().optional(),
+});
+
+const UserFavoritesPayload = z.object({
+  mfd: z.string().length(4),
+  product_type: z.number(),
+  product_id: z.string(),
+  timestamp: z.coerce.date(),
+});
+
+const SignInPayload = z.object({
+  uuid: z.string("UUID is required"),
+  name: z.string(),
+  email: z.email(),
+  sign_in_type: z.number().min(1).max(3),
+  user_preference: UserPreferencePayload.clone(),
+  user_favorites: UserFavoritesPayload.clone().array().optional(),
+});
+
+export default UserSchema;
+export {
+  UpdateUserPayload,
+  SignInPayload,
+  UserPreferencePayload,
+  UserFavoritesPayload,
+};
