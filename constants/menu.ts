@@ -2,6 +2,7 @@ import {
   IconBell,
   IconCube,
   IconDashboard,
+  IconSettings2,
   IconUsers,
   IconUserShield,
 } from "@tabler/icons-react";
@@ -34,6 +35,11 @@ export const LIST_MENU = {
       name: "User Admin",
       url: "/dashboard/user-admin",
       icon: IconUserShield,
+    },
+    {
+      name: "Allstats Config",
+      url: "/dashboard/config",
+      icon: IconSettings2,
     },
   ],
 };

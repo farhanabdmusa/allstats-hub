@@ -143,3 +143,13 @@ model user_admin {
   admin_updated_at DateTime? @db.Timestamp(6)
   created_at       DateTime  @default(now()) @db.Timestamp(6)
 }
+
+model allstats_config {
+  id         Int       @id(map: "allstats_config_pk") @default(autoincrement())
+  name       String    @unique(map: "allstats_config_unique") @db.VarChar
+  value      String    @db.VarChar
+  created_at DateTime  @default(now()) @db.Timestamp(6)
+  created_by String?   @db.VarChar
+  updated_at DateTime? @db.Timestamp(6)
+  updated_by String?   @db.VarChar
+}

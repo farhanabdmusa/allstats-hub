@@ -58,6 +58,13 @@ export default function RootLayout({
               <IconCircleCheckFilled size={16} className="text-green-500" />
             ),
           }}
+          closeButton
+          toastOptions={{
+            classNames: {
+              error: "text-red-500 border-red-500",
+            },
+            descriptionClassName: "text-sm !text-gray-500",
+          }}
         />
       </body>
     </html>

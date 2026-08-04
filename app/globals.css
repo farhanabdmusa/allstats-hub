@@ -142,4 +142,9 @@
     width: var(--radix-popper-anchor-width);
     max-height: var(--radix-popper-available-width);
   }
+
+  [data-sonner-toast][data-styled="true"][data-type="error"] [data-title],
+  [data-sonner-toast][data-styled="true"][data-type="error"] [data-icon] {
+    @apply !text-red-500;
+  }
 }
