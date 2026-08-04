@@ -16,7 +16,6 @@ import { IconLoader2, IconPlus } from "@tabler/icons-react";
 import { useForm } from "react-hook-form";
 import z from "zod";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
 import {
   Form,
   FormControl,
@@ -42,8 +41,9 @@ const formSchema = z.object({
   value: z.string().min(2).max(50).trim(),
 });
 
-const CreateAllstatsConfigDialog = () => {
-  const router = useRouter();
+const CreateAllstatsConfigDialog = ({
+  refreshTable,
+}: Readonly<{ refreshTable?: () => void }>) => {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -75,7 +75,7 @@ const CreateAllstatsConfigDialog = () => {
         position: "top-center",
       });
       setOpen(false);
-      router.refresh();
+      refreshTable?.();
     } catch (error) {
       toast.error("Failed to create config", {
         id: toastID,
