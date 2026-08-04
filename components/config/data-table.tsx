@@ -9,8 +9,6 @@ import {
   IconChevronsRight,
   IconDotsVertical,
   IconLoader2,
-  IconShieldCheckFilled,
-  IconX,
 } from "@tabler/icons-react";
 import {
   ColumnDef,
@@ -37,86 +35,19 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Fragment, useEffect, useState } from "react";
+import { Fragment, useCallback, useEffect, useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
-import { countAllAdminUsers, getAdminUsers } from "@/data/user-admin";
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
-import Link from "next/link";
 import { AllstatsConfig } from "@/types/allstats-config";
 import {
   countAllstatsConfig,
   getAllstatsConfigs,
 } from "@/data/allstats-config";
-
-const columns: ColumnDef<AllstatsConfig>[] = [
-  {
-    id: "no",
-    header: "No.",
-    cell: ({ row, table }) =>
-      table.getState().pagination.pageIndex *
-        table.getState().pagination.pageSize +
-      row.index +
-      1,
-    enableSorting: false,
-  },
-  {
-    accessorKey: "name",
-    header: "Name",
-    enableSorting: true,
-    cell: ({ row }) => row.original.name,
-  },
-  {
-    accessorKey: "value",
-    header: "Value",
-    enableSorting: false,
-    cell: ({ row }) => row.original.value,
-  },
-  {
-    accessorKey: "updated_at",
-    header: "Updated At",
-    enableSorting: true,
-    cell: ({ row }) =>
-      row.original.updated_at === null
-        ? "-"
-        : new Intl.DateTimeFormat("id-ID", {
-            dateStyle: "medium",
-            timeStyle: "short",
-          }).format(new Date(row.original.updated_at!)) + " WIB",
-  },
-  {
-    accessorKey: "updated_by",
-    header: "Updated By",
-    enableSorting: false,
-    cell: ({ row }) => row.original.updated_by,
-  },
-  {
-    id: "actions",
-    cell: ({ row }) => (
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button
-            variant="ghost"
-            className="data-[state=open]:bg-muted text-muted-foreground flex size-8"
-            size="icon"
-          >
-            <IconDotsVertical />
-            <span className="sr-only">Open menu</span>
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-32">
-          <DropdownMenuItem asChild className="cursor-pointer">
-            <Link href={`/dashboard/config/edit/${row.original.id}`}>Edit</Link>
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    ),
-  },
-];
+import EditAllstatsConfigDialog from "./edit";
 
 const AllstatsConfigDataTable = () => {
   const [mounted, setMounted] = useState(false);
@@ -131,32 +62,108 @@ const AllstatsConfigDataTable = () => {
     pageSize: 10,
   });
 
-  const getData = async (
-    pageSize?: number,
-    page?: number,
-    sort?: SortingState,
-  ) => {
-    setLoading(true);
-    const total = await countAllstatsConfig();
-    if (total.status === false) {
-      setError(total.message ?? "Unknown error while counting total data");
-      setLoading(false);
-      return;
-    }
+  const getData = useCallback(
+    async (pageSize?: number, page?: number, sort?: SortingState) => {
+      console.log("getData", pageSize, page, sort);
+      setLoading(true);
+      const total = await countAllstatsConfig();
+      if (total.status === false) {
+        setError(total.message ?? "Unknown error while counting total data");
+        setLoading(false);
+        return;
+      }
 
-    const req = await getAllstatsConfigs(pageSize, page, sort);
-    if (req.status === false) {
-      setError(req.message ?? "Unknown error while fetching data");
+      const req = await getAllstatsConfigs(pageSize, page, sort);
+      if (req.status === false) {
+        setError(req.message ?? "Unknown error while fetching data");
+        setLoading(false);
+        return;
+      }
+      setTotal(total.count ?? 0);
+      setData([...(req.data ?? [])]);
       setLoading(false);
-      return;
-    }
-    setTotal(total.count ?? 0);
-    setData([...(req.data ?? [])]);
-    setLoading(false);
-    setMounted(true);
-  };
+      setMounted(true);
+    },
+    [],
+  );
+
+  const refreshTable = useCallback(() => {
+    getData(pagination.pageSize, pagination.pageIndex, sorting);
+  }, [getData, pagination.pageIndex, pagination.pageSize, sorting]);
+
+  const columns = useMemo<ColumnDef<AllstatsConfig>[]>(
+    () => [
+      {
+        id: "no",
+        header: "No.",
+        cell: ({ row, table }) =>
+          table.getState().pagination.pageIndex *
+            table.getState().pagination.pageSize +
+          row.index +
+          1,
+        enableSorting: false,
+      },
+      {
+        accessorKey: "name",
+        header: "Name",
+        enableSorting: true,
+        cell: ({ row }) => row.original.name,
+      },
+      {
+        accessorKey: "value",
+        header: "Value",
+        enableSorting: false,
+        cell: ({ row }) => row.original.value,
+      },
+      {
+        accessorKey: "updated_at",
+        header: "Updated At",
+        enableSorting: true,
+        cell: ({ row }) =>
+          row.original.updated_at === null
+            ? "-"
+            : new Intl.DateTimeFormat("id-ID", {
+                dateStyle: "medium",
+                timeStyle: "short",
+              }).format(new Date(row.original.updated_at!)) + " WIB",
+      },
+      {
+        accessorKey: "updated_by",
+        header: "Updated By",
+        enableSorting: false,
+        cell: ({ row }) => row.original.updated_by,
+      },
+      {
+        id: "actions",
+        cell: ({ row }) => (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                className="data-[state=open]:bg-muted text-muted-foreground flex size-8"
+                size="icon"
+              >
+                <IconDotsVertical />
+                <span className="sr-only">Open menu</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-32">
+              <EditAllstatsConfigDialog
+                id={row.original.id}
+                name={row.original.name}
+                value={row.original.value}
+                refreshTable={refreshTable}
+              />
+            </DropdownMenuContent>
+          </DropdownMenu>
+        ),
+      },
+    ],
+    [refreshTable],
+  );
 
   useEffect(() => {
+    console.log("OKKK");
     if (mounted) {
       const theads = document.querySelectorAll("thead th");
       setColumnWidth([
@@ -178,7 +185,7 @@ const AllstatsConfigDataTable = () => {
 
   useEffect(() => {
     getData(pagination.pageSize, pagination.pageIndex, sorting);
-  }, [pagination.pageIndex, pagination.pageSize, sorting]);
+  }, [getData, pagination.pageIndex, pagination.pageSize, sorting]);
 
   const table = useReactTable({
     data,

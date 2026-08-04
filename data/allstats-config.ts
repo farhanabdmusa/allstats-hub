@@ -5,7 +5,7 @@ import { normalizePrismaErrorMessage } from "@/lib/prisma_error";
 import { AllstatsConfig } from "@/types/allstats-config";
 import { SortingState } from "@tanstack/react-table";
 import { getServerSession } from "next-auth";
-import { cacheLife, cacheTag, revalidateTag } from "next/cache";
+import { revalidateTag } from "next/cache";
 
 const normalizeSort = (sort?: SortingState) => {
   const normalizedSort = [...(sort ?? [])]
@@ -22,10 +22,7 @@ const countAllstatsConfig = async (): Promise<{
   count?: number;
   message?: string;
 }> => {
-  "use cache";
   try {
-    cacheTag("allstats-config-count");
-    cacheLife("hours");
     const count = await prisma.allstats_config.count();
     return {
       status: true,
@@ -48,18 +45,12 @@ const getAllstatsConfigs = async (
   data?: AllstatsConfig[];
   message?: string;
 }> => {
-  "use cache";
   try {
     const normalizedSort = normalizeSort(sort);
     const flatSort = normalizedSort.map((s) => ({
       [s.id]: s.desc ? "desc" : "asc",
     }));
-    const sortKey = normalizedSort
-      .map((s) => `${s.id}:${s.desc ? "desc" : "asc"}`)
-      .join("|");
 
-    cacheTag("allstats-config", sortKey || "default");
-    cacheLife("hours");
     const result = await prisma.allstats_config.findMany({
       orderBy: flatSort,
       take: pageSize,
@@ -130,4 +121,65 @@ const createAllstatsConfig = async ({
   }
 };
 
-export { getAllstatsConfigs, countAllstatsConfig, createAllstatsConfig };
+const updateAllstatsConfig = async ({
+  id,
+  name,
+  value,
+}: {
+  id: number;
+  name: string;
+  value: string;
+}) => {
+  try {
+    const session = await getServerSession();
+
+    if (!session?.user) {
+      return {
+        status: false,
+        message: "Unauthorized User",
+      };
+    }
+
+    const user = session.user;
+    if (!user.email) {
+      return {
+        status: false,
+        message: "Unknown user",
+      };
+    }
+    const result = await prisma.allstats_config.update({
+      where: {
+        id: id,
+      },
+      data: {
+        name,
+        value,
+        updated_at: new Date(),
+        updated_by: user.email,
+      },
+      select: {
+        name: true,
+      },
+    });
+
+    revalidateTag("allstats-config", "max");
+    revalidateTag("allstats-config-count", "max");
+
+    return {
+      status: true,
+      data: result,
+    };
+  } catch (error) {
+    return {
+      status: false,
+      message: normalizePrismaErrorMessage(error),
+    };
+  }
+};
+
+export {
+  getAllstatsConfigs,
+  countAllstatsConfig,
+  createAllstatsConfig,
+  updateAllstatsConfig,
+};
