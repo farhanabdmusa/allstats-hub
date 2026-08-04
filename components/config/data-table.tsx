@@ -64,7 +64,6 @@ const AllstatsConfigDataTable = () => {
 
   const getData = useCallback(
     async (pageSize?: number, page?: number, sort?: SortingState) => {
-      console.log("getData", pageSize, page, sort);
       setLoading(true);
       const total = await countAllstatsConfig();
       if (total.status === false) {
@@ -163,7 +162,6 @@ const AllstatsConfigDataTable = () => {
   );
 
   useEffect(() => {
-    console.log("OKKK");
     if (mounted) {
       const theads = document.querySelectorAll("thead th");
       setColumnWidth([

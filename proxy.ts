@@ -39,7 +39,6 @@ export async function proxy(request: NextRequest) {
       });
     }
   } catch (err) {
-    console.log(`🚀 ~ middleware ~ path ${pathname} ~ err:`, err);
     if (err instanceof JWTExpired) {
       return createApiResponse({
         status: false,

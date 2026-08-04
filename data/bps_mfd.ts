@@ -40,7 +40,6 @@ const getDomain = async (): Promise<{
       data: jsonData.data?.[1] ?? [],
     };
   } catch (e) {
-    console.log("🚀 ~ getDomain ~ e:", e);
     return {
       status: false,
       message: `Failed to get BPS Domain Data. Trace: ${e}`,
