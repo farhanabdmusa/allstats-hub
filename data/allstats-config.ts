@@ -5,7 +5,7 @@ import { normalizePrismaErrorMessage } from "@/lib/prisma_error";
 import { AllstatsConfig } from "@/types/allstats-config";
 import { SortingState } from "@tanstack/react-table";
 import { getServerSession } from "next-auth";
-import { revalidateTag } from "next/cache";
+import { cacheLife, cacheTag, revalidateTag } from "next/cache";
 
 const normalizeSort = (sort?: SortingState) => {
   const normalizedSort = [...(sort ?? [])]
@@ -36,22 +36,33 @@ const countAllstatsConfig = async (): Promise<{
   }
 };
 
-const getAllstatsConfigs = async (
-  pageSize?: number,
-  page?: number,
-  sort?: SortingState,
-): Promise<{
+const getAllstatsConfigs = async ({
+  pageSize,
+  page,
+  sort,
+  isPublic = false,
+}: {
+  pageSize?: number;
+  page?: number;
+  sort?: SortingState;
+  isPublic?: boolean;
+}): Promise<{
   status: boolean;
   data?: AllstatsConfig[];
   message?: string;
 }> => {
+  "use cache";
+
   try {
+    cacheTag("core:allstats_config");
+    cacheLife("hours");
     const normalizedSort = normalizeSort(sort);
     const flatSort = normalizedSort.map((s) => ({
       [s.id]: s.desc ? "desc" : "asc",
     }));
 
     const result = await prisma.allstats_config.findMany({
+      select: isPublic ? { name: true, value: true } : undefined,
       orderBy: flatSort,
       take: pageSize,
       skip: page && pageSize ? page * pageSize : undefined,
@@ -106,8 +117,7 @@ const createAllstatsConfig = async ({
       },
     });
 
-    revalidateTag("allstats-config", "max");
-    revalidateTag("allstats-config-count", "max");
+    revalidateTag("core:allstats_config", "hours");
 
     return {
       status: true,
@@ -162,8 +172,7 @@ const updateAllstatsConfig = async ({
       },
     });
 
-    revalidateTag("allstats-config", "max");
-    revalidateTag("allstats-config-count", "max");
+    revalidateTag("core:allstats_config", "hours");
 
     return {
       status: true,

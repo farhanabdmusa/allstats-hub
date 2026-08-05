@@ -6,8 +6,6 @@ import { getNotification } from "@/data/notifications";
 import { getAllTopic } from "@/data/topic";
 import { notFound } from "next/navigation";
 
-export const dynamic = "force-dynamic";
-
 const EditNotificationPage = async ({
   params,
 }: Readonly<{ params: Promise<{ id: string }> }>) => {

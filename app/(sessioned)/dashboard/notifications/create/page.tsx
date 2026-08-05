@@ -4,8 +4,6 @@ import { SidebarInset } from "@/components/ui/sidebar";
 import getDomain from "@/data/bps_mfd";
 import { getAllTopic } from "@/data/topic";
 
-export const dynamic = "force-dynamic";
-
 const CreateNotificationPage = async () => {
   const topics = await getAllTopic();
   const domains = await getDomain();

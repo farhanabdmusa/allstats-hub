@@ -73,7 +73,11 @@ const AllstatsConfigDataTable = () => {
         return;
       }
 
-      const req = await getAllstatsConfigs(pageSize, page, sort);
+      const req = await getAllstatsConfigs({
+        pageSize: pageSize,
+        page: page,
+        sort: sort,
+      });
       if (req.status === false) {
         setError(req.message ?? "Unknown error while fetching data");
         setLoading(false);
