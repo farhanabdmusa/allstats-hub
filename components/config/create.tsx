@@ -27,6 +27,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { createAllstatsConfig } from "@/data/allstats-config";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 const formSchema = z.object({
   name: z
@@ -41,9 +42,8 @@ const formSchema = z.object({
   value: z.string().min(2).max(50).trim(),
 });
 
-const CreateAllstatsConfigDialog = ({
-  refreshTable,
-}: Readonly<{ refreshTable?: () => void }>) => {
+const CreateAllstatsConfigDialog = () => {
+  const router = useRouter();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -74,8 +74,8 @@ const CreateAllstatsConfigDialog = ({
         id: toastID,
         position: "top-center",
       });
+      router.refresh();
       setOpen(false);
-      refreshTable?.();
     } catch (error) {
       toast.error("Failed to create config", {
         id: toastID,
@@ -91,7 +91,7 @@ const CreateAllstatsConfigDialog = ({
         form.reset();
       }, 20);
     }
-  }, [open]);
+  }, [form, open]);
 
   return (
     <Dialog open={open} defaultOpen={false} onOpenChange={setOpen}>

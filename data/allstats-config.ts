@@ -3,18 +3,28 @@
 import prisma from "@/lib/prisma";
 import { normalizePrismaErrorMessage } from "@/lib/prisma_error";
 import { AllstatsConfig } from "@/types/allstats-config";
-import { SortingState } from "@tanstack/react-table";
 import { getServerSession } from "next-auth";
 import { cacheLife, cacheTag, revalidateTag } from "next/cache";
 
-const normalizeSort = (sort?: SortingState) => {
-  const normalizedSort = [...(sort ?? [])]
-    .filter((item): item is NonNullable<typeof item> => Boolean(item?.id))
-    .sort(
-      (a, b) => a.id.localeCompare(b.id) || Number(a.desc) - Number(b.desc),
-    );
+const normalizeSort = (
+  sort?: string | string[],
+):
+  | undefined
+  | {
+      [x: string]: string;
+    }[] => {
+  if (sort == undefined) {
+    return undefined;
+  }
+  if (typeof sort == "string") {
+    const splitted = sort.split(":");
+    return [{ [splitted[0].trim()]: splitted[1].trim() }];
+  }
 
-  return normalizedSort;
+  return sort.map((i) => {
+    const splitted = i.split(":");
+    return { [splitted[0].trim()]: splitted[1].trim() };
+  });
 };
 
 const countAllstatsConfig = async (): Promise<{
@@ -29,6 +39,7 @@ const countAllstatsConfig = async (): Promise<{
       count,
     };
   } catch (error) {
+    console.log("🚀 ~ countAllstatsConfig ~ error:", error);
     return {
       status: false,
       message: normalizePrismaErrorMessage(error),
@@ -44,22 +55,25 @@ const getAllstatsConfigs = async ({
 }: {
   pageSize?: number;
   page?: number;
-  sort?: SortingState;
+  sort?: string | string[];
   isPublic?: boolean;
 }): Promise<{
   status: boolean;
   data?: AllstatsConfig[];
   message?: string;
+  total?: number;
 }> => {
   "use cache";
 
   try {
-    cacheTag("core:allstats_config");
+    cacheTag("allstats_config");
     cacheLife("hours");
-    const normalizedSort = normalizeSort(sort);
-    const flatSort = normalizedSort.map((s) => ({
-      [s.id]: s.desc ? "desc" : "asc",
-    }));
+    const flatSort = normalizeSort(sort);
+    const countResult = await countAllstatsConfig();
+
+    if (!countResult.status) {
+      throw new Error(countResult.message ?? "Unknown Error");
+    }
 
     const result = await prisma.allstats_config.findMany({
       select: isPublic ? { name: true, value: true } : undefined,
@@ -70,8 +84,10 @@ const getAllstatsConfigs = async ({
     return {
       status: true,
       data: result,
+      total: countResult.count ?? 0,
     };
   } catch (error) {
+    console.log("🚀 ~ getAllstatsConfigs ~ error:", error);
     return {
       status: false,
       message: normalizePrismaErrorMessage(error),
@@ -117,7 +133,7 @@ const createAllstatsConfig = async ({
       },
     });
 
-    revalidateTag("core:allstats_config", "hours");
+    revalidateTag("allstats_config", "hours");
 
     return {
       status: true,
@@ -172,7 +188,7 @@ const updateAllstatsConfig = async ({
       },
     });
 
-    revalidateTag("core:allstats_config", "hours");
+    revalidateTag("allstats_config", "hours");
 
     return {
       status: true,
@@ -186,9 +202,46 @@ const updateAllstatsConfig = async ({
   }
 };
 
+const deleteAllstatsConfig = async (id: number) => {
+  try {
+    const session = await getServerSession();
+
+    if (!session?.user) {
+      return {
+        status: false,
+        message: "Unauthorized User",
+      };
+    }
+
+    const user = session.user;
+    if (!user.email) {
+      return {
+        status: false,
+        message: "Unknown user",
+      };
+    }
+    await prisma.allstats_config.delete({
+      where: {
+        id: id,
+      },
+    });
+
+    revalidateTag("allstats_config", "hours");
+
+    return {
+      status: true,
+    };
+  } catch (error) {
+    return {
+      status: false,
+      message: normalizePrismaErrorMessage(error),
+    };
+  }
+};
+
 export {
   getAllstatsConfigs,
-  countAllstatsConfig,
   createAllstatsConfig,
   updateAllstatsConfig,
+  deleteAllstatsConfig,
 };

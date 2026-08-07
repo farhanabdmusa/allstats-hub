@@ -105,13 +105,10 @@ const EditAllstatsConfigDialog = ({
 
   return (
     <Dialog open={open} defaultOpen={false} onOpenChange={setOpen}>
-      <DialogTrigger className="text-sm px-2 py-1 w-full hover:bg-gray-100 cursor-pointer rounded text-left">
-        <DropdownMenuItem
-          className="w-full cursor-pointer"
-          onSelect={(e) => e.preventDefault()}
-        >
+      <DialogTrigger asChild>
+        <Button variant="ghost" size="sm" className="w-full justify-start">
           Update
-        </DropdownMenuItem>
+        </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-sm">
         <DialogHeader>
