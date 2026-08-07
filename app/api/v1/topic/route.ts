@@ -6,8 +6,8 @@ import { type NextRequest } from "next/server";
 
 export async function GET(request: NextRequest) {
   // TODO: consider caching if the topics are not frequently changed
+  const authHeader = request.headers.get("authorization");
   try {
-    const authHeader = request.headers.get("authorization");
     if (!authHeader) {
       return createApiResponse({
         status: false,

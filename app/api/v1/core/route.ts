@@ -5,8 +5,8 @@ import { jwtVerify } from "jose";
 import { type NextRequest } from "next/server";
 
 export async function GET(request: NextRequest) {
+  const authHeader = request.headers.get("authorization");
   try {
-    const authHeader = request.headers.get("authorization");
     if (!authHeader) {
       return createApiResponse({
         status: false,

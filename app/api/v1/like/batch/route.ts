@@ -8,11 +8,11 @@ import { NextRequest } from "next/server";
 import z from "zod";
 
 export async function GET(request: NextRequest) {
+  const authHeader = request.headers.get("authorization");
   try {
     const SECRET_KEY = new TextEncoder().encode(
       process.env.SIGNATURE_SECRET_KEY,
     );
-    const authHeader = request.headers.get("authorization");
     const token = authHeader?.split(" ")[1];
     const jwt = await jwtVerify(token!, SECRET_KEY, {
       audience: AUDIENCE,
