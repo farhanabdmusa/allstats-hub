@@ -1,7 +1,6 @@
 import { AUDIENCE } from "@/constants/v1/api";
 import { getAllstatsConfigs } from "@/data/allstats-config";
 import createApiResponse from "@/lib/create_api_response";
-import prisma from "@/lib/prisma";
 import { jwtVerify } from "jose";
 import { type NextRequest } from "next/server";
 
