@@ -131,7 +131,15 @@ export const authOptions: AuthOptions = {
 
         return true;
       } catch (error) {
-        console.error("🚀 ~ authOptions ~ callbacks signIn() ~ error:", error);
+        if (error instanceof Error) {
+          const resolvedError = error;
+          if (
+            resolvedError.message == "Unknown User" ||
+            resolvedError.message == "Unauthorized User"
+          )
+            throw error;
+        }
+        console.log("🚀 ~ error:", error);
         throw new Error("Auth Error (AUERR-01)");
       }
     },
