@@ -4,7 +4,7 @@ import prisma from "@/lib/prisma";
 import { normalizePrismaErrorMessage } from "@/lib/prisma_error";
 import { AllstatsConfig } from "@/types/allstats-config";
 import { getServerSession } from "next-auth";
-import { cacheLife, cacheTag, revalidateTag } from "next/cache";
+import { cacheLife, cacheTag, updateTag } from "next/cache";
 
 const normalizeSort = (
   sort?: string | string[],
@@ -27,23 +27,13 @@ const normalizeSort = (
   });
 };
 
-const countAllstatsConfig = async (): Promise<{
-  status: boolean;
-  count?: number;
-  message?: string;
-}> => {
+const countAllstatsConfig = async (): Promise<number> => {
   try {
     const count = await prisma.allstats_config.count();
-    return {
-      status: true,
-      count,
-    };
+    return count;
   } catch (error) {
     console.log("🚀 ~ countAllstatsConfig ~ error:", error);
-    return {
-      status: false,
-      message: normalizePrismaErrorMessage(error),
-    };
+    throw new Error(normalizePrismaErrorMessage(error));
   }
 };
 
@@ -58,22 +48,15 @@ const getAllstatsConfigs = async ({
   sort?: string | string[];
   isPublic?: boolean;
 }): Promise<{
-  status: boolean;
-  data?: AllstatsConfig[];
-  message?: string;
-  total?: number;
+  data: AllstatsConfig[];
+  total: number;
 }> => {
   "use cache";
-
+  cacheTag("allstats_config");
+  cacheLife("hours");
   try {
-    cacheTag("allstats_config");
-    cacheLife("hours");
     const flatSort = normalizeSort(sort);
     const countResult = await countAllstatsConfig();
-
-    if (!countResult.status) {
-      throw new Error(countResult.message ?? "Unknown Error");
-    }
 
     const result = await prisma.allstats_config.findMany({
       select: isPublic ? { name: true, value: true } : undefined,
@@ -82,16 +65,13 @@ const getAllstatsConfigs = async ({
       skip: page && pageSize ? page * pageSize : undefined,
     });
     return {
-      status: true,
       data: result,
-      total: countResult.count ?? 0,
+      total: countResult,
     };
   } catch (error) {
     console.log("🚀 ~ getAllstatsConfigs ~ error:", error);
-    return {
-      status: false,
-      message: normalizePrismaErrorMessage(error),
-    };
+
+    throw new Error(normalizePrismaErrorMessage(error));
   }
 };
 
@@ -133,7 +113,7 @@ const createAllstatsConfig = async ({
       },
     });
 
-    revalidateTag("allstats_config", "hours");
+    updateTag("allstats_config");
 
     return {
       status: true,
@@ -188,7 +168,7 @@ const updateAllstatsConfig = async ({
       },
     });
 
-    revalidateTag("allstats_config", "hours");
+    updateTag("allstats_config");
 
     return {
       status: true,
@@ -226,7 +206,7 @@ const deleteAllstatsConfig = async (id: number) => {
       },
     });
 
-    revalidateTag("allstats_config", "hours");
+    updateTag("allstats_config");
 
     return {
       status: true,
