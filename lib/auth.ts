@@ -88,47 +88,52 @@ export const authOptions: AuthOptions = {
   },
   callbacks: {
     async signIn({ user }) {
-      const email = user.email?.trim();
-      const name = user.name?.trim();
-      const uuid = user.id?.trim();
+      try {
+        const email = user.email?.trim();
+        const name = user.name?.trim();
+        const uuid = user.id?.trim();
 
-      if (!email || !name || !uuid) {
-        throw new Error("Unknown User");
-      }
+        if (!email || !name || !uuid) {
+          throw new Error("Unknown User");
+        }
 
-      const adminUser = await prisma.user_admin.findUnique({
-        where: {
-          email,
-        },
-        select: {
-          is_admin: true,
-        },
-      });
-
-      if (adminUser == null) {
-        await prisma.user_admin.create({
-          data: {
-            email: email,
-            name: name,
-            uuid: uuid,
+        const adminUser = await prisma.user_admin.findUnique({
+          where: {
+            email,
+          },
+          select: {
+            is_admin: true,
           },
         });
+
+        if (adminUser == null) {
+          await prisma.user_admin.create({
+            data: {
+              email: email,
+              name: name,
+              uuid: uuid,
+            },
+          });
+        }
+
+        if (!adminUser?.is_admin) {
+          throw new Error("Unauthorized User");
+        }
+
+        prisma.user_admin.update({
+          where: {
+            email: email,
+          },
+          data: {
+            last_signin_at: getCurrentDateTime(),
+          },
+        });
+
+        return true;
+      } catch (error) {
+        console.error("🚀 ~ authOptions ~ callbacks signIn() ~ error:", error);
+        throw new Error("Auth Error (AUERR-01)");
       }
-
-      if (!adminUser?.is_admin) {
-        throw new Error("Unauthorized User");
-      }
-
-      prisma.user_admin.update({
-        where: {
-          email: email,
-        },
-        data: {
-          last_signin_at: getCurrentDateTime(),
-        },
-      });
-
-      return true;
     },
   },
 };
