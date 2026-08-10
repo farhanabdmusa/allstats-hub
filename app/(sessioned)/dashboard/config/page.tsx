@@ -5,7 +5,48 @@ import { SidebarInset } from "@/components/ui/sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DATATABLE_PAGE_SIZE } from "@/constants/data-table";
 import { getAllstatsConfigs } from "@/data/allstats-config";
+import { AllstatsConfig } from "@/types/allstats-config";
 import { Suspense } from "react";
+
+const getData = async ({
+  page,
+  pageSize,
+  sort,
+}: Readonly<{
+  page: number;
+  pageSize: number;
+  sort?: string | string[];
+}>): Promise<{
+  data?: AllstatsConfig[];
+  status: boolean;
+  message?: string;
+  total?: number;
+}> => {
+  try {
+    const result = await getAllstatsConfigs({
+      page: page,
+      pageSize: pageSize,
+      sort,
+    });
+
+    return {
+      status: true,
+      data: result.data,
+      total: result.total,
+    };
+  } catch (error) {
+    if (error instanceof Error) {
+      return {
+        status: false,
+        message: error.message,
+      };
+    }
+    return {
+      status: false,
+      message: `${error}`,
+    };
+  }
+};
 
 const ConfigPage = async ({
   searchParams,
@@ -25,11 +66,12 @@ const ConfigPage = async ({
     ? Number(pageSize ?? "10")
     : 10;
   const pageFinal = Number(page ?? "1") - 1 >= 0 ? Number(page ?? "1") : 1;
-  const data = getAllstatsConfigs({
+  const data = getData({
     page: pageFinal - 1,
     pageSize: pageSizeFinal,
     sort,
   });
+
   return (
     <SidebarInset>
       <SiteHeader title="Allstats Configuration" />
