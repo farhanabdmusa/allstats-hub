@@ -59,7 +59,9 @@ const getAllstatsConfigs = async ({
     const countResult = await countAllstatsConfig();
 
     const result = await prisma.allstats_config.findMany({
-      select: isPublic ? { name: true, value: true } : undefined,
+      select: isPublic
+        ? { name: true, value: true, updated_at: true }
+        : undefined,
       orderBy: flatSort,
       take: pageSize,
       skip: page && pageSize ? page * pageSize : undefined,
