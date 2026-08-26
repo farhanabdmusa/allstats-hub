@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
 
     return createApiResponse({
       status: true,
-      data: result,
+      data: result.data,
     });
   } catch (error) {
     console.log("🚀 ~ GET /api/v1/core ~ error:", error);
