@@ -356,16 +356,10 @@ export class PushNotificationService {
         condition: conditions.filter(Boolean).join(" && "),
         ...baseMessage,
       };
-      console.log(
-        "🚀 ~ PushNotificationService ~ sendBackgroundNotificationToAllUsers ~ message:",
-        message,
-      );
-
-      console.log("fcm", fcm);
 
       const response = await fcm.send(message);
       console.log(
-        "Topic notification for All Users dispatched effectively:",
+        "Background notification for All Users dispatched effectively:",
         response,
       );
 
