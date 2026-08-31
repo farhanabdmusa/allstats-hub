@@ -3,12 +3,16 @@ import { ColumnDef } from "@tanstack/react-table";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuItem,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import EditAllstatsConfigDialog from "./edit";
 import DeleteAllstatsConfig from "./delete";
 import { Button } from "../ui/button";
 import { IconDotsVertical } from "@tabler/icons-react";
+import { toast } from "sonner";
+import { sendConfigNotification } from "@/data/allstats-config";
+import { Separator } from "../ui/separator";
 
 const ConfigColumns: ColumnDef<AllstatsConfig>[] = [
   {
@@ -65,7 +69,7 @@ const ConfigColumns: ColumnDef<AllstatsConfig>[] = [
             <span className="sr-only">Open menu</span>
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-32">
+        <DropdownMenuContent align="end">
           <EditAllstatsConfigDialog
             id={row.original.id}
             name={row.original.name}
@@ -73,6 +77,46 @@ const ConfigColumns: ColumnDef<AllstatsConfig>[] = [
             // refreshTable={refreshTable}
           />
           <DeleteAllstatsConfig id={row.original.id} />
+          <Separator className="my-0.5" />
+          <DropdownMenuItem
+            className="hover:cursor-pointer"
+            asChild
+            onClick={async () => {
+              const toastID = toast.loading("Sending notification...", {
+                position: "top-center",
+              });
+              try {
+                const result = await sendConfigNotification(row.original.id);
+                if (result) {
+                  toast.success("Notification send successfully", {
+                    id: toastID,
+                    position: "top-center",
+                  });
+                  window.location.reload();
+                } else {
+                  toast.error("Failed to send notification", {
+                    id: toastID,
+                    position: "top-center",
+                  });
+                }
+              } catch (error) {
+                toast.error("Failed to send notification", {
+                  id: toastID,
+                  position: "top-center",
+                  description:
+                    error instanceof Error ? error.message : undefined,
+                });
+              }
+            }}
+          >
+            <Button
+              variant="ghost"
+              size="sm"
+              className="w-full justify-start px-3"
+            >
+              Send Background Notification
+            </Button>
+          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     ),

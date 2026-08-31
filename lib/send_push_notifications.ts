@@ -12,6 +12,11 @@ interface PushNotificationPayload {
   channelId?: string;
 }
 
+interface BackgroundNotificationPayload {
+  type: string;
+  data: Record<string, string>;
+}
+
 export class PushNotificationService {
   private static buildBaseMessage(
     locale: "en" | "id",
@@ -61,6 +66,44 @@ export class PushNotificationService {
         },
       },
       data: payload.data ?? {},
+    };
+  }
+
+  private static buildBaseBackgroundMessage(
+    payload: BackgroundNotificationPayload,
+  ): {
+    android: {
+      priority?: "high" | "normal";
+    };
+    apns: {
+      headers: {
+        "apns-priority": string;
+        "apns-push-type": "background";
+      };
+      payload: {
+        aps: {
+          contentAvailable: true;
+        };
+      };
+    };
+    data: Record<string, string>;
+  } {
+    return {
+      android: {
+        priority: "high",
+      },
+      apns: {
+        headers: { "apns-priority": "5", "apns-push-type": "background" },
+        payload: {
+          aps: {
+            contentAvailable: true,
+          },
+        },
+      },
+      data: {
+        type: payload.type,
+        ...payload.data,
+      },
     };
   }
 
@@ -287,6 +330,48 @@ export class PushNotificationService {
       return true;
     } catch (error) {
       console.error("Failed executing FCM topic dispatch:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Sends a background notification to all users.
+   */
+  static async sendBackgroundNotificationToAllUsers({
+    mfd,
+    payload,
+  }: Readonly<{
+    mfd?: string;
+    payload: BackgroundNotificationPayload;
+  }>): Promise<boolean> {
+    try {
+      const allUsersCondition = "'all_users' in topics";
+      const mfdCondition = mfd ? `'mfd_${mfd}' in topics` : undefined;
+
+      const baseMessage = this.buildBaseBackgroundMessage(payload);
+
+      const conditions = [allUsersCondition, mfdCondition];
+
+      const message: ConditionMessage = {
+        condition: conditions.filter(Boolean).join(" && "),
+        ...baseMessage,
+      };
+      console.log(
+        "🚀 ~ PushNotificationService ~ sendBackgroundNotificationToAllUsers ~ message:",
+        message,
+      );
+
+      console.log("fcm", fcm);
+
+      const response = await fcm.send(message);
+      console.log(
+        "Topic notification for All Users dispatched effectively:",
+        response,
+      );
+
+      return true;
+    } catch (error) {
+      console.error("Failed executing background notification FCM :", error);
       throw error;
     }
   }

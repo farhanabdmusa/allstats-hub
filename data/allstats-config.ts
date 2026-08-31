@@ -2,6 +2,7 @@
 
 import prisma from "@/lib/prisma";
 import { normalizePrismaErrorMessage } from "@/lib/prisma_error";
+import { PushNotificationService } from "@/lib/send_push_notifications";
 import { AllstatsConfig } from "@/types/allstats-config";
 import { getServerSession } from "next-auth";
 import { cacheLife, cacheTag, updateTag } from "next/cache";
@@ -221,9 +222,42 @@ const deleteAllstatsConfig = async (id: number) => {
   }
 };
 
+const sendConfigNotification = async (id: number): Promise<boolean> => {
+  try {
+    const config = await prisma.allstats_config.findUnique({
+      where: {
+        id: id,
+      },
+      select: {
+        name: true,
+        value: true,
+      },
+    });
+    if (config == null) {
+      throw new Error("Config not found");
+    }
+
+    const payload = {
+      type: config.name,
+      data: { value: config.value },
+    };
+
+    const send =
+      await PushNotificationService.sendBackgroundNotificationToAllUsers({
+        payload: payload,
+      });
+
+    return send;
+  } catch (error) {
+    console.error("Failed to send config notification:", error);
+    throw new Error("Failed to send config notification");
+  }
+};
+
 export {
   getAllstatsConfigs,
   createAllstatsConfig,
   updateAllstatsConfig,
   deleteAllstatsConfig,
+  sendConfigNotification,
 };
