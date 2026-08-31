@@ -239,6 +239,7 @@ const sendConfigNotification = async (id: number): Promise<boolean> => {
 
     const payload = {
       type: config.name,
+      action: true,
       data: { value: config.value },
     };
 

@@ -14,6 +14,7 @@ interface PushNotificationPayload {
 
 interface BackgroundNotificationPayload {
   type: string;
+  action: boolean;
   data: Record<string, string>;
 }
 
@@ -101,6 +102,7 @@ export class PushNotificationService {
         },
       },
       data: {
+        action: payload.action ? "true" : "false",
         type: payload.type,
         ...payload.data,
       },
