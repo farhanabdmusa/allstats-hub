@@ -32,6 +32,9 @@ export function getFcm(): Messaging {
 
 export const fcm = {
   send: (...args: Parameters<Messaging["send"]>) => getFcm().send(...args),
+  unsubscribeFromTopic: (
+    ...args: Parameters<Messaging["unsubscribeFromTopic"]>
+  ) => getFcm().unsubscribeFromTopic(...args),
   sendEachForMulticast: (
     ...args: Parameters<Messaging["sendEachForMulticast"]>
   ) => getFcm().sendEachForMulticast(...args),
