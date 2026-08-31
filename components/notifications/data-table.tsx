@@ -208,17 +208,26 @@ const columns: ColumnDef<Notification>[] = [
               const toastID = toast.loading("Sending notification...", {
                 position: "top-center",
               });
-              const result = await resendNotification(row.original.id);
-              if (result) {
-                toast.success("Notification send successfully", {
-                  id: toastID,
-                  position: "top-center",
-                });
-                window.location.reload();
-              } else {
+              try {
+                const result = await resendNotification(row.original.id);
+                if (result) {
+                  toast.success("Notification send successfully", {
+                    id: toastID,
+                    position: "top-center",
+                  });
+                  window.location.reload();
+                } else {
+                  toast.error("Failed to send notification", {
+                    id: toastID,
+                    position: "top-center",
+                  });
+                }
+              } catch (error) {
                 toast.error("Failed to send notification", {
                   id: toastID,
                   position: "top-center",
+                  description:
+                    error instanceof Error ? error.message : undefined,
                 });
               }
             }}
