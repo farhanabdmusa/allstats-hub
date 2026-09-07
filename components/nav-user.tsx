@@ -47,9 +47,13 @@ export function NavUser({
               size="lg"
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
-              <Avatar className="h-8 w-8 rounded-lg grayscale">
-                <AvatarImage src={user.image!} alt={user.name ?? "User"} />
-                <AvatarFallback className="rounded-lg">
+              <Avatar className="h-8 w-8 rounded-full">
+                <AvatarImage
+                  src={user.image!}
+                  alt={user.name ?? "User"}
+                  className="aspect-auto object-cover object-top"
+                />
+                <AvatarFallback className="rounded-full">
                   {user.name?.split(" ").map((e) => e.charAt(0))}
                 </AvatarFallback>
               </Avatar>
