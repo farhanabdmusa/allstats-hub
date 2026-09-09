@@ -2,7 +2,7 @@ import { fcm } from "@/lib/firebase_admin";
 import { ConditionMessage, MulticastMessage } from "firebase-admin/messaging";
 import prisma from "./prisma";
 
-interface PushNotificationPayload {
+export interface PushNotificationPayload {
   id_title: string;
   id_body: string;
   en_title: string;
@@ -10,9 +10,10 @@ interface PushNotificationPayload {
   data?: Record<string, string>;
   sound?: string;
   channelId?: string;
+  backgroundNotification?: BackgroundNotificationPayload;
 }
 
-interface BackgroundNotificationPayload {
+export interface BackgroundNotificationPayload {
   type: string;
   action: boolean;
   data: Record<string, string>;
@@ -22,6 +23,7 @@ export class PushNotificationService {
   private static buildBaseMessage(
     locale: "en" | "id",
     payload: PushNotificationPayload,
+    mfd?: string,
   ): {
     notification: {
       title: string;
@@ -46,6 +48,36 @@ export class PushNotificationService {
     };
     data: Record<string, string>;
   } {
+    if (payload.backgroundNotification != undefined) {
+      return {
+        notification: {
+          title: locale == "en" ? payload.en_title : payload.id_title,
+          body: locale == "en" ? payload.en_body : payload.id_body,
+        },
+        android: {
+          priority: "high",
+          notification: {
+            channelId: payload.channelId ?? "default_channel",
+            sound: payload.sound ?? "default",
+          },
+        },
+        apns: {
+          headers: { "apns-priority": "10" },
+          payload: {
+            aps: {
+              sound: payload.sound ?? "default",
+            },
+          },
+        },
+        data: {
+          ...payload.data,
+          action: payload.backgroundNotification.action ? "true" : "false",
+          type: payload.backgroundNotification.type,
+          mfd: mfd!,
+          ...payload.backgroundNotification.data,
+        },
+      };
+    }
     return {
       notification: {
         title: locale == "en" ? payload.en_title : payload.id_title,
@@ -245,7 +277,7 @@ export class PushNotificationService {
       const mfdCondition = mfd ? `mfd_${mfd} in topics` : undefined;
 
       // Send notification for Indonesian Users
-      const idBaseMessage = this.buildBaseMessage("id", payload);
+      const idBaseMessage = this.buildBaseMessage("id", payload, mfd);
       const idLangConditions = "'lang_id' in topics";
       const idConditions = [topicCondition, idLangConditions, mfdCondition];
 
@@ -261,7 +293,7 @@ export class PushNotificationService {
       );
 
       // Send notification for English Users
-      const enBaseMessage = this.buildBaseMessage("en", payload);
+      const enBaseMessage = this.buildBaseMessage("en", payload, mfd);
       const enLangConditions = "'lang_en' in topics";
       const enConditions = [topicCondition, enLangConditions, mfdCondition];
 
@@ -298,7 +330,7 @@ export class PushNotificationService {
       const mfdCondition = mfd ? `'mfd_${mfd}' in topics` : undefined;
 
       // Send notification for Indonesian Users
-      const idBaseMessage = this.buildBaseMessage("id", payload);
+      const idBaseMessage = this.buildBaseMessage("id", payload, mfd);
       const idLangConditions = "'lang_id' in topics";
       const idConditions = [allUsersCondition, idLangConditions, mfdCondition];
 
@@ -314,7 +346,7 @@ export class PushNotificationService {
       );
 
       // Send notification for English Users
-      const enBaseMessage = this.buildBaseMessage("en", payload);
+      const enBaseMessage = this.buildBaseMessage("en", payload, mfd);
       const enLangConditions = "'lang_en' in topics";
       const enConditions = [allUsersCondition, enLangConditions, mfdCondition];
 

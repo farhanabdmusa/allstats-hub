@@ -1,7 +1,11 @@
 "use server";
 
 import prisma from "@/lib/prisma";
-import { PushNotificationService } from "@/lib/send_push_notifications";
+import {
+  BackgroundNotificationPayload,
+  PushNotificationPayload,
+  PushNotificationService,
+} from "@/lib/send_push_notifications";
 import { Notification } from "@/types/notification";
 import { SortingState } from "@tanstack/react-table";
 
@@ -33,11 +37,15 @@ export async function getNotifications(
           topic: true,
         },
       },
+      action: true,
+      type: true,
+      product_id: true,
     },
     orderBy: flatSort,
     take: pageSize,
     skip: page * pageSize,
   });
+
   return notifications;
 }
 
@@ -142,6 +150,9 @@ export async function getNotification(id: number) {
           topic: true,
         },
       },
+      action: true,
+      type: true,
+      product_id: true,
     },
     where: { id },
   });
@@ -219,11 +230,23 @@ export async function resendNotification(id: number): Promise<boolean> {
       throw new Error("This notification doesn't a push notification");
     }
 
-    const payload = {
+    const backgroundPayload: BackgroundNotificationPayload | undefined =
+      notification.action && notification.type
+        ? {
+            type: notification.type,
+            action: notification.action,
+            data: {
+              id_product: notification.product_id ?? "",
+            },
+          }
+        : undefined;
+
+    const payload: PushNotificationPayload = {
       id_title: notification.id_title,
       id_body: notification.id_short_description!,
       en_title: notification.en_title,
       en_body: notification.en_short_description!,
+      backgroundNotification: backgroundPayload,
     };
 
     if (!notification.push_notification) {
