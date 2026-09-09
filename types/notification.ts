@@ -1,3 +1,4 @@
+import { notification } from "@prisma/client";
 import { Topic } from "./topic";
 
 export interface Notification {
@@ -13,6 +14,9 @@ export interface Notification {
   push_notification: boolean;
   timestamp: Date;
   notification_sent?: Date | null;
+  action: boolean;
+  type?: notification["type"] | null;
+  product_id?: string | null;
 }
 
 export interface GeneratedNotification {

@@ -70,6 +70,9 @@ model notification {
   en_content           String
   en_short_description String?              @db.VarChar
   mfd                  String?              @db.Char(4)
+  action               Boolean              @default(false)
+  type                 notification_type?
+  product_id           String?              @db.VarChar
   notification_topic   notification_topic[]
 }
 
@@ -152,4 +155,13 @@ model allstats_config {
   created_by String?   @db.VarChar
   updated_at DateTime? @db.Timestamp(6)
   updated_by String?   @db.VarChar
+}
+
+enum notification_type {
+  brs
+  table
+  publication
+  news
+  infographic
+  press_release @map("press-release")
 }

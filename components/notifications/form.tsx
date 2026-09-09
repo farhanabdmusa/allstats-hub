@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { SerializedEditorState } from "lexical";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createNotification, updateNotification } from "@/data/notifications";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
@@ -32,23 +32,60 @@ import { Textarea } from "@/components/ui/textarea";
 import GenerateNotification from "./ai-generate";
 import { BPSDomain } from "@/types/bps_domain";
 import SelectDomain from "./form/select_domain";
+import SelectProductType from "./form/product-type";
 
 const Editor = dynamic(() => import("@/components/blocks/editor-x/editor"), {
   ssr: false,
   loading: () => <Skeleton className="rounded-md h-1/3 min-h-72 w-full" />,
 });
 
-const formSchema = z.object({
-  id_title: z.string().min(2).max(50),
-  id_content: z.string(),
-  id_short_description: z.string().min(0).max(100).optional(),
-  en_title: z.string().min(2).max(50),
-  en_content: z.string(),
-  en_short_description: z.string().min(0).max(100).optional(),
-  mfd: z.string().length(4).optional(),
-  topics: z.array(z.number()).optional(),
-  push_notification: z.boolean(),
-});
+const formSchema = z
+  .object({
+    id_title: z.string().min(2).max(50),
+    id_content: z.string(),
+    id_short_description: z.string().min(0).max(100).optional(),
+    en_title: z.string().min(2).max(50),
+    en_content: z.string(),
+    en_short_description: z.string().min(0).max(100).optional(),
+    mfd: z.string().length(4).optional().nullable(),
+    topics: z.array(z.number()).optional(),
+    push_notification: z.boolean(),
+    action: z.boolean(),
+    type: z
+      .enum([
+        "brs",
+        "table",
+        "publication",
+        "news",
+        "infographic",
+        "press_release",
+      ])
+      .optional(),
+    product_id: z.string().optional(),
+  })
+  .superRefine(({ action, type, product_id, mfd }, ctx) => {
+    if (action && !type) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["type"],
+        message: "Type is required when action is enabled",
+      });
+    }
+    if (action && type !== "press_release" && !product_id) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["product_id"],
+        message: "Product ID is required when type is not Press Release",
+      });
+    }
+    if (action && !mfd) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["mfd"],
+        message: "MFD is required when action is enabled",
+      });
+    }
+  });
 
 const NotificationForm = ({
   data,
@@ -70,7 +107,7 @@ const NotificationForm = ({
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
+    values: {
       id_title: data?.id_title ?? "",
       id_content: data?.id_content ?? "",
       id_short_description: data?.id_short_description ?? undefined,
@@ -81,11 +118,15 @@ const NotificationForm = ({
       topics:
         data?.notification_topic?.map((topic) => topic.topic.id) ?? undefined,
       push_notification: data?.push_notification ?? false,
+      action: data?.action ?? false,
+      type: data?.type ?? undefined,
+      product_id: data?.product_id ?? undefined,
     },
   });
 
   const selectGenerateNotification = async (data: GeneratedNotification) => {
     form.setValue("push_notification", true);
+    form.setValue("action", true);
     form.setValue("id_short_description", data.id_short_description);
     form.setValue("id_title", data.id_title);
     form.setValue("id_content", data.id_description);
@@ -164,6 +205,10 @@ const NotificationForm = ({
     }
   };
 
+  useEffect(() => {
+    form.reset();
+  }, [data, form]);
+
   return (
     <>
       {!data && <GenerateNotification onSelect={selectGenerateNotification} />}
@@ -220,9 +265,13 @@ const NotificationForm = ({
                   <FormControl>
                     <SelectDomain
                       domains={domains}
-                      selected={field.value}
+                      selected={field.value ?? undefined}
                       onChange={(value) => {
-                        form.setValue("mfd", value);
+                        if (value) {
+                          form.setValue("mfd", value);
+                        } else {
+                          form.setValue("mfd", null);
+                        }
                       }}
                     />
                   </FormControl>
@@ -357,7 +406,66 @@ const NotificationForm = ({
                 />
               )}
             </div>
+
+            <FormField
+              control={form.control}
+              name="action"
+              render={() => (
+                <FormItem className="flex flex-row items-center space-x-2 space-y-0">
+                  <FormControl>
+                    <Switch
+                      checked={form.watch("action")}
+                      onCheckedChange={(value) => {
+                        form.setValue("action", value);
+                        if (!value) {
+                          form.resetField("type", { defaultValue: undefined });
+                          form.resetField("product_id", {
+                            defaultValue: undefined,
+                          });
+                        }
+                      }}
+                    />
+                  </FormControl>
+                  <FormLabel>Use Action</FormLabel>
+                </FormItem>
+              )}
+            />
           </div>
+
+          {form.watch("action") && (
+            <FormField
+              control={form.control}
+              name="type"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Action Type</FormLabel>
+                  <FormControl>
+                    <SelectProductType
+                      selected={field.value}
+                      onChange={field.onChange}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
+
+          {form.watch("action") && form.watch("type") !== "press_release" && (
+            <FormField
+              control={form.control}
+              name="product_id"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>ID Product</FormLabel>
+                  <FormControl>
+                    <Input placeholder="ID Product" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
 
           <div className="inline-flex gap-2">
             <Button
