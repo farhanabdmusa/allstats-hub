@@ -138,6 +138,7 @@ Format JSON yang diharapkan untuk setiap tone of voice:
         break;
       }
     } catch (err: any) {
+      console.error("error generating content with model", modelName, err);
       lastError = err;
     }
   }
