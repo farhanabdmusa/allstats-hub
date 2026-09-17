@@ -88,6 +88,7 @@ export async function createNotification(
             action: data.action,
             data: {
               id_product: data.product_id ?? "",
+              mfd: data.product_mfd ?? "",
             },
           }
         : undefined;
@@ -251,6 +252,7 @@ export async function resendNotification(id: number): Promise<boolean> {
             action: notification.action,
             data: {
               id_product: notification.product_id ?? "",
+              mfd: notification.product_mfd ?? "",
             },
           }
         : undefined;
@@ -276,6 +278,7 @@ export async function resendNotification(id: number): Promise<boolean> {
       });
 
       const send = await PushNotificationService.sendNotificationToTopic({
+        mfd: notification.mfd ?? undefined,
         topics: topics.map((e) => e.name),
         payload: payload,
       });

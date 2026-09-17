@@ -23,7 +23,6 @@ export class PushNotificationService {
   private static buildBaseMessage(
     locale: "en" | "id",
     payload: PushNotificationPayload,
-    mfd?: string,
   ): {
     notification: {
       title: string;
@@ -73,7 +72,6 @@ export class PushNotificationService {
           ...payload.data,
           action: payload.backgroundNotification.action ? "true" : "false",
           type: payload.backgroundNotification.type,
-          mfd: mfd!,
           ...payload.backgroundNotification.data,
         },
       };
@@ -277,7 +275,7 @@ export class PushNotificationService {
       const mfdCondition = mfd ? `mfd_${mfd} in topics` : undefined;
 
       // Send notification for Indonesian Users
-      const idBaseMessage = this.buildBaseMessage("id", payload, mfd);
+      const idBaseMessage = this.buildBaseMessage("id", payload);
       const idLangConditions = "'lang_id' in topics";
       const idConditions = [topicCondition, idLangConditions, mfdCondition];
 
@@ -293,7 +291,7 @@ export class PushNotificationService {
       );
 
       // Send notification for English Users
-      const enBaseMessage = this.buildBaseMessage("en", payload, mfd);
+      const enBaseMessage = this.buildBaseMessage("en", payload);
       const enLangConditions = "'lang_en' in topics";
       const enConditions = [topicCondition, enLangConditions, mfdCondition];
 
@@ -330,7 +328,7 @@ export class PushNotificationService {
       const mfdCondition = mfd ? `'mfd_${mfd}' in topics` : undefined;
 
       // Send notification for Indonesian Users
-      const idBaseMessage = this.buildBaseMessage("id", payload, mfd);
+      const idBaseMessage = this.buildBaseMessage("id", payload);
       const idLangConditions = "'lang_id' in topics";
       const idConditions = [allUsersCondition, idLangConditions, mfdCondition];
 
@@ -346,7 +344,7 @@ export class PushNotificationService {
       );
 
       // Send notification for English Users
-      const enBaseMessage = this.buildBaseMessage("en", payload, mfd);
+      const enBaseMessage = this.buildBaseMessage("en", payload);
       const enLangConditions = "'lang_en' in topics";
       const enConditions = [allUsersCondition, enLangConditions, mfdCondition];
 
