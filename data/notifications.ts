@@ -166,6 +166,7 @@ export async function getNotification(id: number) {
       action: true,
       type: true,
       product_id: true,
+      product_mfd: true,
     },
     where: { id },
   });

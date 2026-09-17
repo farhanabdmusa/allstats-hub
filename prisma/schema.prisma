@@ -73,6 +73,7 @@ model notification {
   action               Boolean              @default(false)
   type                 notification_type?
   product_id           String?              @db.VarChar
+  product_mfd          String?              @db.Char(4)
   notification_topic   notification_topic[]
 }
 

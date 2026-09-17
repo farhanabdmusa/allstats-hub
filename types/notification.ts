@@ -17,6 +17,7 @@ export interface Notification {
   action: boolean;
   type?: notification["type"] | null;
   product_id?: string | null;
+  product_mfd?: string | null;
 }
 
 export interface GeneratedNotification {

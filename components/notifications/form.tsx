@@ -62,8 +62,14 @@ const formSchema = z
       ])
       .optional(),
     product_id: z.string().optional(),
+    product_mfd: z
+      .string()
+      .regex(/^\d*$/, "Product MFD must contain only numbers")
+      .length(4)
+      .optional()
+      .nullable(),
   })
-  .superRefine(({ action, type, product_id, mfd }, ctx) => {
+  .superRefine(({ action, type, product_id, product_mfd }, ctx) => {
     if (action && !type) {
       ctx.addIssue({
         code: "custom",
@@ -78,11 +84,11 @@ const formSchema = z
         message: "Product ID is required when type is not Press Release",
       });
     }
-    if (action && !mfd) {
+    if (action && type !== "press_release" && product_id && !product_mfd) {
       ctx.addIssue({
         code: "custom",
-        path: ["mfd"],
-        message: "MFD is required when action is enabled",
+        path: ["product_mfd"],
+        message: "Product MFD is required when Product ID is provided",
       });
     }
   });
@@ -121,6 +127,7 @@ const NotificationForm = ({
       action: data?.action ?? false,
       type: data?.type ?? undefined,
       product_id: data?.product_id ?? undefined,
+      product_mfd: data?.product_mfd ?? null,
     },
   });
 
@@ -460,6 +467,32 @@ const NotificationForm = ({
                   <FormLabel>ID Product</FormLabel>
                   <FormControl>
                     <Input placeholder="ID Product" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
+
+          {form.watch("product_id") && (
+            <FormField
+              control={form.control}
+              name="product_mfd"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Product MFD</FormLabel>
+                  <FormControl>
+                    <SelectDomain
+                      domains={domains}
+                      selected={field.value ?? undefined}
+                      onChange={(value) => {
+                        if (value) {
+                          form.setValue("product_mfd", value);
+                        } else {
+                          form.setValue("product_mfd", null);
+                        }
+                      }}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
