@@ -81,11 +81,23 @@ export async function createNotification(
       },
     });
 
-    const payload = {
+    const backgroundPayload: BackgroundNotificationPayload | undefined =
+      data.action && data.type
+        ? {
+            type: data.type,
+            action: data.action,
+            data: {
+              id_product: data.product_id ?? "",
+            },
+          }
+        : undefined;
+
+    const payload: PushNotificationPayload = {
       id_title: data.id_title,
       id_body: data.id_short_description!,
       en_title: data.en_title,
       en_body: data.en_short_description!,
+      backgroundNotification: backgroundPayload,
     };
 
     if (data.push_notification) {
@@ -100,6 +112,7 @@ export async function createNotification(
         const send = await PushNotificationService.sendNotificationToTopic({
           topics: topics.map((e) => e.name),
           payload: payload,
+          mfd: data.mfd ?? undefined,
         });
         if (send) {
           await prisma.notification.update({
