@@ -18,6 +18,7 @@ export interface Notification {
   type?: notification["type"] | null;
   product_id?: string | null;
   product_mfd?: string | null;
+  product_url?: string | null;
 }
 
 export interface GeneratedNotification {

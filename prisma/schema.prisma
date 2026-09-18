@@ -74,6 +74,7 @@ model notification {
   type                 notification_type?
   product_id           String?              @db.VarChar
   product_mfd          String?              @db.Char(4)
+  product_url          String?              @db.VarChar
   notification_topic   notification_topic[]
 }
 

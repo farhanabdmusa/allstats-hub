@@ -68,30 +68,40 @@ const formSchema = z
       .length(4)
       .optional()
       .nullable(),
+    product_url: z.httpUrl().optional(),
   })
-  .superRefine(({ action, type, product_id, product_mfd }, ctx) => {
-    if (action && !type) {
-      ctx.addIssue({
-        code: "custom",
-        path: ["type"],
-        message: "Type is required when action is enabled",
-      });
-    }
-    if (action && type !== "press_release" && !product_id) {
-      ctx.addIssue({
-        code: "custom",
-        path: ["product_id"],
-        message: "Product ID is required when type is not Press Release",
-      });
-    }
-    if (action && type !== "press_release" && product_id && !product_mfd) {
-      ctx.addIssue({
-        code: "custom",
-        path: ["product_mfd"],
-        message: "Product MFD is required when Product ID is provided",
-      });
-    }
-  });
+  .superRefine(
+    ({ action, type, product_id, product_mfd, product_url }, ctx) => {
+      if (action && !type) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["type"],
+          message: "Type is required when action is enabled",
+        });
+      }
+      if (action && type !== "press_release" && !product_id) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["product_id"],
+          message: "Product ID is required when type is not Press Release",
+        });
+      }
+      if (action && type !== "press_release" && product_id && !product_mfd) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["product_mfd"],
+          message: "Product MFD is required when Product ID is provided",
+        });
+      }
+      if (action && type === "press_release" && !product_url) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["product_url"],
+          message: "Product URL is required when type is Press Release",
+        });
+      }
+    },
+  );
 
 const NotificationForm = ({
   data,
@@ -128,6 +138,7 @@ const NotificationForm = ({
       type: data?.type ?? undefined,
       product_id: data?.product_id ?? undefined,
       product_mfd: data?.product_mfd ?? null,
+      product_url: data?.product_url ?? "",
     },
   });
 
@@ -458,21 +469,39 @@ const NotificationForm = ({
             />
           )}
 
-          {form.watch("action") && form.watch("type") !== "press_release" && (
+          {form.watch("action") && form.watch("type") === "press_release" && (
             <FormField
               control={form.control}
-              name="product_id"
+              name="product_url"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>ID Product</FormLabel>
+                  <FormLabel>YouTube URL</FormLabel>
                   <FormControl>
-                    <Input placeholder="ID Product" {...field} />
+                    <Input placeholder="YouTube URL" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
           )}
+
+          {form.watch("action") &&
+            form.watch("type") &&
+            form.watch("type") !== "press_release" && (
+              <FormField
+                control={form.control}
+                name="product_id"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>ID Product</FormLabel>
+                    <FormControl>
+                      <Input placeholder="ID Product" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
 
           {form.watch("product_id") && (
             <FormField

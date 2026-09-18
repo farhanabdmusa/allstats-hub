@@ -89,6 +89,7 @@ export async function createNotification(
             data: {
               id_product: data.product_id ?? "",
               mfd: data.product_mfd ?? "",
+              product_url: data.product_url ?? "",
             },
           }
         : undefined;
@@ -168,6 +169,7 @@ export async function getNotification(id: number) {
       type: true,
       product_id: true,
       product_mfd: true,
+      product_url: true,
     },
     where: { id },
   });
@@ -253,6 +255,7 @@ export async function resendNotification(id: number): Promise<boolean> {
             data: {
               id_product: notification.product_id ?? "",
               mfd: notification.product_mfd ?? "",
+              product_url: notification.product_url ?? "",
             },
           }
         : undefined;
