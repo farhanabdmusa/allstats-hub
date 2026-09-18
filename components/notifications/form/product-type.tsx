@@ -80,8 +80,12 @@ const SelectProductType = ({
           aria-expanded={open}
           className="w-full justify-between"
         >
-          <div className="flex-grow flex flex-wrap gap-1">
-            {value ? <Badge>{value.name}</Badge> : ""}
+          <div
+            className={cn("flex-grow flex flex-wrap gap-1", {
+              "text-muted-foreground": !value,
+            })}
+          >
+            {value ? <Badge>{value.name}</Badge> : "Select type"}
           </div>
           <ChevronsUpDown className="opacity-50" />
         </Button>
