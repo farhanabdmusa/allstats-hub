@@ -136,7 +136,7 @@ const NotificationForm = ({
       push_notification: data?.push_notification ?? false,
       action: data?.action ?? false,
       type: data?.type ?? undefined,
-      product_id: data?.product_id ?? undefined,
+      product_id: data?.product_id ?? "",
       product_mfd: data?.product_mfd ?? null,
       product_url: data?.product_url ?? "",
     },
