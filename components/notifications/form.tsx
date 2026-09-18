@@ -477,7 +477,10 @@ const NotificationForm = ({
                 <FormItem>
                   <FormLabel>YouTube URL</FormLabel>
                   <FormControl>
-                    <Input placeholder="YouTube URL" {...field} />
+                    <Input
+                      placeholder="www.youtube.com/watch?v=..."
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
