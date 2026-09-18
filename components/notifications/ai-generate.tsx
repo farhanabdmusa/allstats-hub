@@ -35,6 +35,7 @@ import {
 import { Badge } from "../ui/badge";
 import { Card, CardContent } from "../ui/card";
 import { Separator } from "../ui/separator";
+import Link from "next/link";
 
 const formSchema = z.object({
   context: z.string(),
@@ -101,7 +102,7 @@ const GenerateNotification = ({
                 name="context"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Title</FormLabel>
+                    <FormLabel>Notification Context</FormLabel>
                     <FormControl>
                       <Textarea
                         placeholder="Write your context here"
@@ -123,7 +124,16 @@ const GenerateNotification = ({
                     </FormControl>
                     <FormDescription>
                       Insert your API Key if default API Key has reached the
-                      limit.
+                      limit. Get one from{" "}
+                      <Link
+                        href="https://aistudio.google.com/app/apikey"
+                        target="_blank"
+                        rel="noreferrer"
+                        className="underline text-blue-500 font-medium"
+                      >
+                        Google AI Studio
+                      </Link>
+                      .
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
