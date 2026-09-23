@@ -73,4 +73,5 @@ const publicApiRoutes = [
   "/api/v1/auth/anonymous",
   "/api/v1/auth/refresh",
   "/api/v1/auth/signin/callbacks/pst",
+  "/api/status",
 ];
