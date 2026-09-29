@@ -10,13 +10,18 @@ import {
 } from "jose";
 import { JOSEError, JWTExpired } from "jose/errors";
 
-async function verifyAppleToken(identityToken: string): Promise<{
-  status: boolean;
-  userId?: string;
-  email?: string;
-  name?: string;
-  error?: string;
-}> {
+async function verifyAppleToken(identityToken: string): Promise<
+  | {
+      status: true;
+      userId: string;
+      email: string;
+      name: string;
+    }
+  | {
+      status: false;
+      error?: string;
+    }
+> {
   try {
     // 1. Point to Apple's official public keys endpoint
     const AppleJWKS = createRemoteJWKSet(
@@ -33,6 +38,13 @@ async function verifyAppleToken(identityToken: string): Promise<{
 
     // 3. Extract the unique User ID (sub) and structural data
     const appleUserId = payload.sub;
+    if (!appleUserId) {
+      return {
+        status: false,
+        error: "Unknown User ID",
+      };
+    }
+
     const email = decoded.email as string;
     const givenName = decoded.givenName as string | undefined | null;
     const familyName = decoded.familyName as string | undefined | null;
@@ -41,7 +53,7 @@ async function verifyAppleToken(identityToken: string): Promise<{
       status: true,
       userId: appleUserId,
       email: email,
-      name: [givenName, familyName].join(" ").trim(),
+      name: [givenName, familyName].filter(Boolean).join(" ").trim(),
     };
   } catch (err: unknown) {
     if (err instanceof JWTExpired) {
