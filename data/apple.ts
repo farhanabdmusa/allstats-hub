@@ -132,7 +132,7 @@ const getRefreshToken = async (
       const res = await request.json();
       return {
         status: false,
-        error: `${res.error_description ?? res.error ?? `${request.status} ${request.statusText}`} (EAA-04)`,
+        error: `${res.error_description ?? res.error ?? `${request.status} ${request.statusText}`} (EDA-01)`,
       };
     }
 
@@ -146,20 +146,20 @@ const getRefreshToken = async (
 
     return {
       status: false,
-      error: "Unable to get token (EAA-05)",
+      error: "Unable to get token (EDA-02)",
     };
   } catch (error) {
     console.error("🚀 ~ getRefreshToken ~ error:", error);
     if (error instanceof JOSEError) {
       return {
         status: false,
-        error: `${error.code} (EAA-06)`,
+        error: `${error.code} (EDA-03)`,
       };
     }
 
     return {
       status: false,
-      error: "Unknown error while get token (EAA-07)",
+      error: "Unknown error while get token (EDA-04)",
     };
   }
 };
