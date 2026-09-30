@@ -44,10 +44,7 @@ export async function POST(request: NextRequest): Promise<
     const validatedData = AppleSignInPayload.safeParse(formData);
     if (!validatedData.success) {
       const errors = z.treeifyError(validatedData.error);
-      console.error(
-        "🚀 ~ POST /api/v1/auth/signin/callbacks/apple:",
-        errors.properties,
-      );
+      console.error("🚀 ~ POST /api/v1/auth/signin/apple:", errors.properties);
       return createApiResponse({
         status: false,
         zodError: errors.properties,
@@ -75,7 +72,7 @@ export async function POST(request: NextRequest): Promise<
 
     if (user_device == null) {
       console.error(
-        "🚀 ~ POST /api/v1/auth/signin/callbacks/apple:",
+        "🚀 ~ POST /api/v1/auth/signin/apple:",
         `Failed to get user: ${user_data.uuid}`,
       );
       return createApiResponse({
@@ -85,7 +82,19 @@ export async function POST(request: NextRequest): Promise<
       });
     }
 
-    const applePayload = await verifyAppleToken(user_data.identity_token);
+    const appleState = validatedData.data.state;
+    let isAndroid = false;
+    if (appleState) {
+      const decodedStateJson = JSON.parse(
+        Buffer.from(appleState, "base64url").toString("utf-8"),
+      );
+      isAndroid = decodedStateJson["device"] == "Android";
+    }
+
+    const applePayload = await verifyAppleToken(
+      user_data.identity_token,
+      isAndroid,
+    );
 
     if (!applePayload.status) {
       return createApiResponse({
@@ -102,7 +111,11 @@ export async function POST(request: NextRequest): Promise<
       });
     }
 
-    const appleToken = await getRefreshToken(user_data.authorization);
+    const appleToken = await getRefreshToken(
+      user_data.authorization,
+      isAndroid,
+    );
+
     if (!appleToken.status) {
       return createApiResponse({
         status: false,
@@ -127,7 +140,7 @@ export async function POST(request: NextRequest): Promise<
       if (user == null) {
         // Revoke sign in with Apple and ask the user to sign in again
         if (appleToken.token) {
-          const revoke = await revokeToken(appleToken.token);
+          const revoke = await revokeToken(appleToken.token, isAndroid);
 
           if (!revoke.status && revoke.error != undefined) {
             return createApiResponse({
@@ -277,7 +290,7 @@ export async function POST(request: NextRequest): Promise<
       data: { ...user, apple_name: user_data.email ? appleName : undefined },
     });
   } catch (error) {
-    console.log("🚀 ~ POST /api/v1/auth/signin/callbacks/apple:", error);
+    console.log("🚀 ~ POST /api/v1/auth/signin/apple:", error);
     return createApiResponse({
       status: false,
       message: "Failed to sign user",
