@@ -46,18 +46,27 @@ export async function GET(request: NextRequest) {
       return createApiResponse({
         status: false,
         message: "User not found",
-        statusCode: 404,
+        statusCode: 200,
       });
     }
 
-    const check = await prisma.user_device.findFirst({
+    const deviceExist = await prisma.user_device.findFirst({
       where: {
-        id_user: userId,
         uuid: uuid,
       },
     });
 
-    if (!check) {
+    if (deviceExist == null) {
+      return createApiResponse({
+        status: false,
+        message: "User not found",
+        statusCode: 200,
+      });
+    }
+    console.log("🚀 ~ GET ~ deviceExist:", deviceExist);
+
+    if (deviceExist.id_user != userId) {
+      // Reset access token and sign in
       await prisma.user_device.update({
         where: {
           uuid,
@@ -71,7 +80,7 @@ export async function GET(request: NextRequest) {
       return createApiResponse({
         status: false,
         message: "User not found",
-        statusCode: 404,
+        statusCode: 200,
       });
     }
 
@@ -95,7 +104,7 @@ export async function GET(request: NextRequest) {
       return createApiResponse({
         status: false,
         message: "User not found",
-        statusCode: 404,
+        statusCode: 200,
       });
     }
 
@@ -141,16 +150,16 @@ export async function GET(request: NextRequest) {
       domain: updatedUser.user_preference?.domain,
       topic_selection: updatedUser.user_preference?.topic_selection,
       uuid: uuid,
-      new_version: check.new_version,
-      first_session: check.first_session,
-      last_session: check.last_session,
-      is_virtual: check.is_virtual,
-      device_model: check.device_model,
-      manufacturer: check.manufacturer,
-      os: check.os,
-      os_version: check.os_version,
-      fcm_token: check.fcm_token,
-      sign_in_type: check.sign_in_type,
+      new_version: deviceExist.new_version,
+      first_session: deviceExist.first_session,
+      last_session: deviceExist.last_session,
+      is_virtual: deviceExist.is_virtual,
+      device_model: deviceExist.device_model,
+      manufacturer: deviceExist.manufacturer,
+      os: deviceExist.os,
+      os_version: deviceExist.os_version,
+      fcm_token: deviceExist.fcm_token,
+      sign_in_type: deviceExist.sign_in_type,
       name: updatedUser.name,
       email_apple: updatedUser.email_apple,
       email_pst: updatedUser.email_pst,
@@ -204,7 +213,7 @@ export async function PUT(request: NextRequest) {
       return createApiResponse({
         status: false,
         message: "User not found",
-        statusCode: 404,
+        statusCode: 200,
       });
     }
 
@@ -232,7 +241,7 @@ export async function PUT(request: NextRequest) {
       return createApiResponse({
         status: false,
         message: "User not found",
-        statusCode: 404,
+        statusCode: 200,
       });
     }
 
