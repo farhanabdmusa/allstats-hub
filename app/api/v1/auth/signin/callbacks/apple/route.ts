@@ -5,9 +5,7 @@ const deepLinkGenerator = (searchParams: URLSearchParams) => {
 };
 
 export async function POST(request: NextRequest) {
-  console.log("🚀 ~ POST ~ request:", request);
   const formData = await request.formData();
-  console.log("🚀 ~ POST ~ formData:", formData);
   const searchParams = new URLSearchParams();
   formData.forEach((value, key) => {
     if (typeof value === "string") {
