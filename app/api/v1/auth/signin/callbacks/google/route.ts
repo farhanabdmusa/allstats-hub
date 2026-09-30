@@ -71,11 +71,11 @@ export async function POST(request: NextRequest) {
     }
 
     const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
-    const client = new OAuth2Client(GOOGLE_CLIENT_ID);
+    const client = new OAuth2Client({ client_id: GOOGLE_CLIENT_ID });
 
     const ticket = await client.verifyIdToken({
       idToken: user_data.id_token,
-      audience: process.env.FIREBASE_GCLIENT_ID,
+      audience: GOOGLE_CLIENT_ID,
     });
 
     const payload = ticket.getPayload();
