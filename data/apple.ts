@@ -10,7 +10,10 @@ import {
 } from "jose";
 import { JOSEError, JWTExpired } from "jose/errors";
 
-async function verifyAppleToken(identityToken: string): Promise<
+async function verifyAppleToken(
+  identityToken: string,
+  isAndroid: boolean,
+): Promise<
   | {
       status: true;
       userId: string;
@@ -22,6 +25,7 @@ async function verifyAppleToken(identityToken: string): Promise<
       error?: string;
     }
 > {
+  const bundleId = BUNDLE_ID + (isAndroid ? ".client" : "");
   try {
     // 1. Point to Apple's official public keys endpoint
     const AppleJWKS = createRemoteJWKSet(
@@ -31,7 +35,7 @@ async function verifyAppleToken(identityToken: string): Promise<
     // 2. Verify the token signature and validation claims
     const { payload } = await jwtVerify(identityToken, AppleJWKS, {
       issuer: "https://appleid.apple.com",
-      audience: process.env.BUNDLE_ID,
+      audience: bundleId,
     });
 
     const decoded = decodeJwt(identityToken);
@@ -88,6 +92,7 @@ async function verifyAppleToken(identityToken: string): Promise<
 
 const getRefreshToken = async (
   authorizationCode: string,
+  isAndroid: boolean,
 ): Promise<{
   status: boolean;
   token?: string;
@@ -99,20 +104,22 @@ const getRefreshToken = async (
       "ES256",
     );
 
+    const bundleId = BUNDLE_ID + (isAndroid ? ".client" : "");
+
     const token = await new SignJWT()
       .setProtectedHeader({ alg: "ES256", kid: process.env.APPLE_KID })
       .setIssuer(process.env.APPLE_TEAM_ID ?? "")
       .setIssuedAt()
       .setExpirationTime("10m")
       .setAudience("https://appleid.apple.com")
-      .setSubject(BUNDLE_ID)
+      .setSubject(bundleId)
       .sign(privateKey);
 
     const headers = new Headers();
     headers.append("content-type", "application/x-www-form-urlencoded");
 
     const urlencoded = new URLSearchParams();
-    urlencoded.append("client_id", BUNDLE_ID);
+    urlencoded.append("client_id", bundleId);
     urlencoded.append("client_secret", token);
     urlencoded.append("code", authorizationCode);
     urlencoded.append("grant_type", "authorization_code");
@@ -166,11 +173,13 @@ const getRefreshToken = async (
 
 const revokeToken = async (
   refreshToken: string,
+  isAndroid: boolean,
 ): Promise<{
   status: boolean;
   token?: string;
   error?: string;
 }> => {
+  const bundleId = BUNDLE_ID + (isAndroid ? ".client" : "");
   try {
     const privateKey = await importPKCS8(
       process.env.APPLE_SECRET_KEY ?? "",
@@ -183,14 +192,14 @@ const revokeToken = async (
       .setIssuedAt()
       .setExpirationTime("10m")
       .setAudience("https://appleid.apple.com")
-      .setSubject(BUNDLE_ID)
+      .setSubject(bundleId)
       .sign(privateKey);
 
     const headers = new Headers();
     headers.append("content-type", "application/x-www-form-urlencoded");
 
     const urlencoded = new URLSearchParams();
-    urlencoded.append("client_id", BUNDLE_ID);
+    urlencoded.append("client_id", bundleId);
     urlencoded.append("client_secret", token);
     urlencoded.append("token", refreshToken);
     urlencoded.append("token_type_hint", "refresh_token");
