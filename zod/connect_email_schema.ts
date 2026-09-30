@@ -11,6 +11,7 @@ const ConnectAppleSchema = z.object({
   email: z.email().optional().nullable(),
   given_name: z.string().optional().nullable(),
   family_name: z.string().optional().nullable(),
+  state: z.string().optional().nullable(),
 });
 
 const ConnectGoogleSchema = z.object({
@@ -19,6 +20,7 @@ const ConnectGoogleSchema = z.object({
 
 const DisconnectEmailSchema = z.object({
   type: z.coerce.number().min(1).max(3),
+  device: z.string().optional().nullable(),
 });
 
 export {

@@ -79,6 +79,7 @@ export async function POST(request: NextRequest) {
     }
 
     const type = validatedData.data.type;
+    const isAndroid = validatedData.data.device == "Android";
 
     if (type == device.sign_in_type) {
       // Main account on device
@@ -92,7 +93,7 @@ export async function POST(request: NextRequest) {
     if (type == 3) {
       // Revoke Apple Token
       if (user.apple_refresh_token) {
-        const revoke = await revokeToken(user.apple_refresh_token);
+        const revoke = await revokeToken(user.apple_refresh_token, isAndroid);
 
         if (!revoke.status && revoke.error != undefined) {
           return createApiResponse({

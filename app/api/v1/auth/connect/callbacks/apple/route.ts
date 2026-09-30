@@ -65,8 +65,20 @@ export async function POST(request: NextRequest) {
     }
 
     const user_data = validatedData.data;
+    const appleState = user_data.state;
 
-    const applePayload = await verifyAppleToken(user_data.identity_token);
+    let isAndroid = false;
+    if (appleState) {
+      const decodedStateJson = JSON.parse(
+        Buffer.from(appleState, "base64url").toString("utf-8"),
+      );
+      isAndroid = decodedStateJson["device"] == "Android";
+    }
+
+    const applePayload = await verifyAppleToken(
+      user_data.identity_token,
+      isAndroid,
+    );
 
     if (!applePayload.status) {
       return createApiResponse({
@@ -83,7 +95,10 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    const appleToken = await getRefreshToken(user_data.authorization);
+    const appleToken = await getRefreshToken(
+      user_data.authorization,
+      isAndroid,
+    );
     if (!appleToken.status) {
       return createApiResponse({
         status: false,
@@ -118,7 +133,7 @@ export async function POST(request: NextRequest) {
 
     if (!email || !appleUserId) {
       if (appleToken.token) {
-        const revoke = await revokeToken(appleToken.token);
+        const revoke = await revokeToken(appleToken.token, isAndroid);
 
         if (!revoke.status && revoke.error != undefined) {
           return createApiResponse({
