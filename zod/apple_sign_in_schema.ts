@@ -10,6 +10,7 @@ const AppleSignInPayload = z.object({
   family_name: z.string().optional().nullable(),
   user_preference: UserPreferencePayload.clone(),
   user_favorites: UserFavoritesPayload.clone().array().optional(),
+  state: z.string().optional().nullable(),
 });
 
 export { AppleSignInPayload };
