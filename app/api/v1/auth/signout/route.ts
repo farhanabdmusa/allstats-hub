@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
       return createApiResponse({
         status: false,
         message: "User Not Found",
-        statusCode: 404,
+        statusCode: 200,
       });
     }
 
