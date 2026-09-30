@@ -63,7 +63,6 @@ export async function GET(request: NextRequest) {
         statusCode: 200,
       });
     }
-    console.log("🚀 ~ GET ~ deviceExist:", deviceExist);
 
     if (deviceExist.id_user != userId) {
       // Reset access token and sign in
