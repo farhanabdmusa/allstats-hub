@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
+    const GOOGLE_CLIENT_ID = process.env.FIREBASE_GCLIENT_ID;
     const client = new OAuth2Client({ client_id: GOOGLE_CLIENT_ID });
 
     const ticket = await client.verifyIdToken({
